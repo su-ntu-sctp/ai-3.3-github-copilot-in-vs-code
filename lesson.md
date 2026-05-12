@@ -17,40 +17,6 @@ By the end of this lesson, students will be able to:
 
 ---
 
-## Revision: Recent Java Concepts (60 min)
-
-This session begins with a structured recap of key Java concepts covered in recent lessons. Work through each topic briefly and invite students to ask questions as you go.
-
-### 1. OOP Fundamentals — Classes, Objects, Constructors (15 min)
-- Recap class structure, fields, constructors, and method definitions
-- Remind students of access modifiers (`private`, `public`)
-- Quick Q&A on anything unclear
-
-### 2. Collections and Data Structures (15 min)
-- Recap `ArrayList`, `HashMap`, and when to use each
-- Recap iterating with loops and enhanced for-each
-- Common pitfalls — index out of bounds, null values
-
-### 3. Methods and Return Types (10 min)
-- Recap method signatures, return types, and parameters
-- Remind students of `void` vs returning a value
-
-### 🧑‍💻 Revision Activity (10 min)
-
-Create a `Library.java` class from scratch with the following requirements:
-
-1. A `Book` class with fields: `title` (String), `author` (String), `year` (int)
-2. A `Library` class with an `ArrayList<Book>` to store books
-3. Methods: `addBook(Book book)`, `getAllBooks()`, `findByAuthor(String author)`
-
-Test your code by adding 3 books and calling each method.
-
-### 4. Open Q&A (10 min)
-- Invite students to raise anything unclear from recent lessons
-- Address setup or environment issues before starting the new content
-
----
-
 ## Part 1: Setup and First Contact
 
 ### What is GitHub Copilot?
