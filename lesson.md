@@ -2,7 +2,7 @@
 
 ## Lesson Overview
 
-This Saturday coaching session has two parts. The first hour revisits key concepts from recent lessons through a structured recap and hands-on activity. The second part introduces GitHub Copilot — an AI-powered coding assistant built into VS Code — and shows you how to use it to write Java code faster, smarter, and with less repetition. By the end of this session you will have hands-on experience with Copilot's most useful features and a live demo of its most advanced capabilities.
+This Saturday coaching session has two parts. The first hour revisits key concepts from recent lessons through a structured recap and hands-on activity. The second part introduces GitHub Copilot — an AI-powered coding assistant built into VS Code — and shows you how to use it to write Java code faster, smarter, and with less repetition. By the end of this session you will have hands-on experience with Copilot's most useful features, an understanding of how Copilot's chat modes work, and a live demo of its most advanced agentic capabilities.
 
 **Prerequisites:** Basic Java knowledge — classes, methods, and familiarity with VS Code
 
@@ -11,9 +11,10 @@ This Saturday coaching session has two parts. The first hour revisits key concep
 By the end of this lesson, students will be able to:
 
 1. **Install** and configure GitHub Copilot in VS Code and use inline suggestions to generate Java code
-2. **Apply** Copilot Chat and slash commands to explain, fix, refactor, and document code
-3. **Generate** unit tests and Javadoc automatically using Copilot
-4. **Evaluate** Copilot's suggestions critically and understand its limitations and best practices
+2. **Apply** Copilot Chat, slash commands, and chat modes (Ask / Edit / Agent / Plan) to explain, fix, refactor, and document code
+3. **Review** Copilot-generated unit tests and Javadoc, understanding what's possible today versus what will unlock once a build tool is introduced
+4. **Use** Copilot's agentic features — Copilot CLI and Agent Mode — to autonomously extend an existing Java class across multiple files
+5. **Evaluate** Copilot's suggestions critically and understand its limitations, best practices, and how quickly its feature set evolves
 
 ---
 
@@ -34,14 +35,14 @@ GitHub Copilot offers a **free tier** which includes:
 - Code completions (limited number per month)
 - Copilot Chat in VS Code
 - Access to slash commands (`/explain`, `/fix`, `/tests`, `/doc`)
+- Copilot CLI in the terminal
 
 **Pro features** (paid, but you will see a live demo):
 - Unlimited completions
-- Copilot Agent Mode
-- Copilot Edits across multiple files
-- Custom instructions
+- Higher usage limits for Agent Mode and multi-file editing
+- Custom instructions at scale across large projects
 
-For this lesson, everything in Parts 1–4 works on the free tier. Parts 5 onward are instructor demo only.
+For this lesson, everything in Parts 1–4 works on the free tier. Parts 5 onward are instructor demo, with several sections now also practiced hands-on.
 
 ### Step 1: Install GitHub Copilot in VS Code
 
@@ -300,10 +301,10 @@ Slash commands are shortcuts you type in Copilot Chat to trigger specific action
 |---|---|
 | `/explain` | Explains selected code in plain English |
 | `/fix` | Identifies and fixes bugs in selected code |
-| `/tests` | Generates unit tests for selected code |
-| `/doc` | Generates Javadoc comments for selected code |
+| `/tests` | Generates unit tests for selected code (view/review only until we have a build tool — see below) |
+| `/doc` | Generates Javadoc comments for selected code (may show an options menu — see below) |
 
-### Generating Unit Tests
+### Generating Unit Tests (View and Review, Not Create — Yet)
 
 Select your `MathHelper.java` from Part 2 and in Chat type:
 
@@ -311,7 +312,9 @@ Select your `MathHelper.java` from Part 2 and in Chat type:
 /tests
 ```
 
-Copilot will generate a complete JUnit 5 test class with multiple test cases including edge cases you might not have thought of.
+Copilot will generate a complete JUnit 5 test class with multiple test cases including edge cases you might not have thought of, shown directly in the chat response.
+
+> ℹ️ **Important:** Because our project doesn't have a build tool (Maven/Gradle) or JUnit on the classpath yet, we're using `/tests` here purely as a **"view and learn"** exercise — reading and understanding what a good test class looks like — rather than inserting it as a real, runnable test file. Once we build a Spring Boot project with a build tool later in the course, we'll come back and actually run `/tests` hands-on to create working test classes.
 
 Review the generated tests — Copilot usually covers:
 - Happy path (normal inputs)
@@ -325,6 +328,8 @@ Select your `Calculator.java` from the activity and in Chat type:
 ```
 /doc
 ```
+
+> ℹ️ **Note:** Depending on your Copilot Chat version, `/doc` may not insert Javadoc directly — it may first show you a menu asking what kind of documentation you want (e.g. a `/docs` folder with markdown, Javadoc HTML output, or Java comments). **Select "Java comments"** to get the inline Javadoc block described below.
 
 Copilot generates complete Javadoc with `@param`, `@return`, and `@throws` tags for every method.
 
@@ -348,74 +353,108 @@ Copilot will modify the method in place. You can accept (`Enter`) or discard (`E
 
 Take the `Library.java` class you built in the revision activity and use Copilot to:
 
-1. Use `/doc` to generate Javadoc for all methods
-2. Use `/tests` to generate a JUnit test class
+1. Use `/doc` to select one method and generate Javadoc for it — if prompted with an options menu, choose **"Java comments"**
+2. Use `/tests` to generate and review unit tests for your methods — **don't add this to the project yet**, since we don't have a build tool set up (we'll do this hands-on later with Spring Boot)
 3. Use `Ctrl+I` inline chat to add a `removeBook(String title)` method
 4. Use `Ctrl+I` to add input validation to `addBook()` — it should throw an `IllegalArgumentException` if the book is null
 
 ---
 
-## Part 5: Advanced Features (Instructor Demo)
+## Part 5: Advanced Features (Instructor Demo + Hands-On)
 
-> ℹ️ **The following features are demonstrated by the instructor.** Some require a Pro subscription. Watch how these features work — even if you can't use them on the free tier today, understanding them will help you know what to look for when you upgrade.
+> ℹ️ **A quick word before we dive in:** Copilot's chat features are built around different **modes** — Ask, Edit, Agent, and Plan. Understanding these will make everything in this section click.
+
+### Understanding Copilot Chat's Modes
+
+Copilot Chat isn't just one thing — it operates in different modes, selectable from a dropdown at the top (or bottom) of the chat input box. It's small and easy to miss, but it changes Copilot's behavior significantly:
+
+| Mode | What it does |
+|---|---|
+| **Ask** | Answers questions and explains code. Never edits anything — pure Q&A. |
+| **Edit** | Applies inline edits across chosen files based on your instruction — more manual and scoped than Agent. |
+| **Agent** | Autonomously plans and executes multi-step, multi-file changes. Applies edits automatically, showing "keep/undo" per file rather than showing its reasoning up front. |
+| **Plan** | Works like Agent, but explicitly explores the codebase and shows its reasoning/plan *before* any code changes start — use this mode if you want to see the thinking, not just the result. |
+
+**Why this matters:** if you've noticed Copilot editing multiple files, or answering workspace-wide questions, without you explicitly asking it to — that's because **Agent mode is often the default** in current Copilot Chat. It reasons across your whole workspace and applies changes automatically, which is why some older, separate features (`@workspace`, a distinct "Edits" panel) have quietly folded into this same agentic behavior. We'll see this play out through the rest of this section.
 
 ### Commit Message Generation (Free Tier)
 
 When you have staged changes in VS Code's Source Control panel, Copilot can suggest a commit message automatically.
 
-1. Make changes to a file and stage them
-2. In the Source Control panel, click the **sparkle icon** next to the commit message box
+1. Make changes to a file and **stage them** first
+2. In the Source Control panel, look for the **sparkle icon** at the edge of the commit message box
 3. Copilot generates a meaningful commit message based on your diff
+
+> ℹ️ **Note:** The sparkle icon only appears/activates once you have staged changes. If you don't see it, double-check that something is actually staged first.
 
 This saves time and encourages consistent, descriptive commit messages.
 
-### `@workspace` — Ask About Your Entire Project (Free Tier)
+### Asking Workspace-Scoped Questions (Free Tier)
 
-In Copilot Chat, you can ask questions about your whole project using `@workspace`:
-
-```
-@workspace What does this project do?
-@workspace Where is the customer validation logic?
-@workspace Which classes depend on CustomerRepository?
-@workspace How is the database configured in this project?
-```
-
-Copilot reads your entire workspace and gives you an answer — incredibly useful for navigating large or unfamiliar codebases.
-
-### Terminal Copilot (Free Tier)
-
-Copilot can suggest shell commands in the VS Code integrated terminal.
-
-1. Open the terminal (`Ctrl+\``)
-2. Click the **sparkle icon** in the terminal toolbar
-3. Type what you want to do in plain English:
+You can ask Copilot Chat questions about your whole project directly, in natural language — no special syntax required:
 
 ```
-build the project and skip tests
+How does the customer validation logic work in this project?
+Which classes depend on CustomerRepository?
+How is the database configured in this project?
+```
+
+Copilot reads relevant parts of your workspace automatically to answer — this is implicit, automatic behavior in current Copilot Chat (older versions required typing `@workspace` first; that explicit tag is no longer necessary in most cases).
+
+> ℹ️ **Related but different: `@newWorkspace`.** You may see this appear in autocomplete — it's a separate feature for **scaffolding a brand-new project from a description** (e.g. "create a new Spring Boot REST API project"), not for asking questions about a project you're already working in. Don't confuse the two.
+
+### Copilot CLI — Your Agent, Right in the Terminal (Free Tier)
+
+Copilot's terminal integration has moved beyond simple command suggestions — it now offers **Copilot CLI**, a full agentic session that runs directly in your terminal.
+
+1. Open the integrated terminal (`` Ctrl+` ``)
+2. Type:
+   ```
+   copilot
+   ```
+3. This launches an interactive Copilot CLI session — describe what you want in plain English, and Copilot works out the right command(s), shows you what it's about to run, and you approve before it executes.
+
+Try it:
+```
 find all java files modified in the last 7 days
-create a new directory called config and move all properties files into it
 ```
 
-Copilot suggests the correct command — you review and run it.
+**To exit the CLI session and return to your normal terminal:** type `/exit`, or press `Ctrl+D`, or press `Ctrl+C` twice.
 
-### Copilot Edits — Multi-File Editing (Pro Demo)
+> ℹ️ **How this relates to Agent Mode:** Copilot CLI uses the **same agentic engine as Agent Mode** — the difference is where it lives. Agent Mode (below) works inside the editor, planning and executing changes across your codebase. Copilot CLI works in the terminal, independent of the editor, which is useful for scripting, file management, and Git operations without ever leaving the command line. We'll see the fuller, multi-file version of this same capability next, in Agent Mode.
 
-Copilot Edits lets you describe a change and Copilot applies it across multiple files simultaneously.
+### Copilot Edits — Multi-File Editing (Free Tier / Hands-On)
 
-**Demo scenario:** Open the `simple-crm` project and in Copilot Edits type:
+Copilot lets you describe a change and apply it **across multiple related files simultaneously** — you no longer need a separate "Edits" panel or mode-switch for this; simply describe the change directly in the regular Chat input, and Copilot detects when it spans multiple files.
+
+**Demo 1 — `Customer.java` + `CustomerValidator.java`**
+
+With both files open, type in Chat:
 
 ```
-Add a phoneNumber field to the Customer entity, update the repository, 
-service, and controller to support it
+Add a phoneNumber field to the Customer class, and update 
+CustomerValidator to validate that phoneNumber is not null 
+and contains only digits.
 ```
 
-Copilot plans the changes, shows a diff for each affected file, and you review and accept file by file. This is the equivalent of a junior developer doing the change across the whole codebase for you.
+Copilot proposes changes to **both** files, shown as diffs you review and accept file by file.
 
-### Custom Instructions (Pro Demo)
+**Demo 2 / Activity — `Library.java` + `Book`**
 
-Custom instructions tell Copilot about your project conventions so every suggestion follows your standards automatically.
+```
+Add an isbn field to the Book class, and update Library's 
+addBook, removeBook, and any display methods to include it.
+```
 
-Create a file `.github/copilot-instructions.md` in your project:
+This works well as a student-led follow-up, since you already built `Library.java` yourselves in Part 4.
+
+### Custom Instructions (Free Tier / Hands-On)
+
+Custom instructions tell Copilot about your project conventions so every suggestion follows your standards automatically, without you having to repeat them each time.
+
+**Theory example — Spring Boot conventions (you'll apply this later):**
+
+Create a file `.github/copilot-instructions.md` in a project:
 
 ```markdown
 # Copilot Instructions
@@ -427,13 +466,43 @@ Create a file `.github/copilot-instructions.md` in your project:
 - Use Lombok annotations (@Getter, @Setter, @Builder) on all entity classes
 ```
 
-Now every Copilot suggestion for this project will follow these conventions without you having to ask.
+**Hands-on activity — scoped to what you know today (Java + Collections, no Spring Boot yet):**
 
-### Agent Mode — Autonomous Multi-Step Tasks (Pro Demo)
+Create `.github/copilot-instructions.md` in your current workspace with:
 
-Agent Mode is the most advanced Copilot feature. Instead of suggesting one piece of code at a time, Copilot plans and executes multi-step tasks autonomously across your entire project.
+```markdown
+# Copilot Instructions
 
-**Demo scenario:** In Agent Mode, type:
+- Always add Javadoc comments to every public method (summary, @param, @return)
+- Use meaningful variable names — no single-letter names except loop counters (i, j, k)
+- Prefer ArrayList over raw arrays for collections that may change size
+- When removing items from a List/Set/Map during iteration, use removeIf() 
+  or Iterator.remove() — never modify a collection directly inside a for-each loop
+- Always check for null before accessing object fields or calling methods on 
+  method parameters
+- Follow standard Java naming conventions: camelCase for methods/variables, 
+  PascalCase for class names
+- Include a main() method with a small demo/test of the class when generating 
+  a new class from scratch
+```
+
+Then, in a fresh file, ask Copilot Chat:
+
+```
+Create a Java class called Inventory that stores product names and quantities. 
+Include methods to add stock, remove stock, and update the quantity of an 
+existing product.
+```
+
+**Verify the generated code against your rules:** Is there Javadoc on every public method? Meaningful names? Null-checks on parameters? A `main()` demo? 
+
+> ℹ️ Frame this for students as: **custom instructions are a strong influence, not a guarantee.** Always review the output — don't assume the rules were followed 100% of the time.
+
+### Agent Mode — Autonomous Multi-Step Tasks (Hands-On + Pro Demo)
+
+Agent Mode is Copilot's most powerful capability — instead of suggesting one piece of code at a time, it plans and executes multi-step tasks autonomously across your entire project, applying changes automatically (surfacing risky actions for your review).
+
+**Theory demo (Spring Boot — you'll do this later):**
 
 ```
 Add a new Interaction endpoint to simple-crm. 
@@ -442,13 +511,30 @@ Add the JPA repository, service interface and implementation,
 and REST controller with full CRUD. Follow the existing patterns in the project.
 ```
 
-Copilot will:
-1. Analyse the existing codebase structure
-2. Plan all the files it needs to create or modify
-3. Execute the changes one by one
-4. Show you each change for review
+**Hands-on activity — Inventory Reservation System (extends the class you just built):**
 
-This demonstrates the direction AI-assisted development is heading — from suggestion to execution.
+Using your `Inventory.java` from the Custom Instructions activity, switch to **Agent** mode (or simply proceed — your version may detect this automatically) and type:
+
+```
+Extend my Inventory class into a reservation system. Add the ability to 
+reserve stock for an order (without removing it from available inventory 
+yet), confirm a reservation (which permanently deducts the stock), or 
+cancel a reservation (which releases the reserved stock back to available 
+inventory). Track reservations by a reservation ID. Also create a Main 
+class with a runnable demo showing: a successful reservation, a 
+confirmation, a cancellation, and one case where a reservation fails 
+because there isn't enough available stock.
+```
+
+Watch Copilot:
+1. Analyse the existing `Inventory.java` structure
+2. Plan the new state it needs (tracking reserved vs. available stock)
+3. Propose changes across files, showing diffs for review
+4. Generate a runnable `Main` class demonstrating all four scenarios
+
+**Want to see the planning stage explicitly, before any code changes?** Switch to **Plan** mode instead of Agent — it will explore the codebase and lay out its plan for your review first, rather than applying changes directly.
+
+This demonstrates the direction AI-assisted development is heading — from suggestion, to execution, to full autonomous multi-step reasoning.
 
 ---
 
@@ -479,6 +565,10 @@ Copilot is a prediction engine, not an oracle. It can:
 
 **Rule:** Always read and understand every suggestion before accepting it. You are responsible for the code in your repository — not Copilot.
 
+### Copilot's Features Change Fast
+
+As you've seen throughout this lesson, Copilot's exact behavior — which commands exist, whether a feature needs an explicit tag or mode, even where a button lives in the UI — shifts frequently between versions. The underlying *concepts* (completions, chat, agentic multi-file editing) are stable; the *exact mechanics* are not. When in doubt, test live before relying on documentation or a lesson written even a few months ago.
+
 ### Privacy on the Free Tier
 
 On the free tier, your code snippets may be used to improve GitHub Copilot's models. For private or proprietary code, check your organisation's policy before enabling Copilot. Pro and Enterprise tiers offer options to opt out of data sharing.
@@ -497,15 +587,15 @@ Copilot is a productivity multiplier, not a replacement for understanding. It ma
 |---|---|---|
 | Ghost text completion | Suggests code as you type | Free |
 | Comment-driven generation | Write a comment, get the code | Free |
-| Copilot Chat | Conversational AI in VS Code | Free |
-| `/explain` `/fix` `/tests` `/doc` | Slash command shortcuts | Free |
+| Copilot Chat (Ask / Edit / Agent / Plan modes) | Conversational AI in VS Code, with modes for answering, scoped edits, and full autonomous execution | Free |
+| `/explain` `/fix` `/tests` `/doc` | Slash command shortcuts (`/tests` and `/doc` currently limited by our lack of a build tool — see Part 4) | Free |
 | Inline chat (`Ctrl+I`) | Edit code in place | Free |
-| Commit message generation | Suggests git commit messages | Free |
-| `@workspace` | Ask about your whole project | Free |
-| Terminal Copilot | Suggests shell commands | Free |
-| Custom instructions | Project-specific conventions | Pro |
-| Copilot Edits | Multi-file changes at once | Pro |
-| Agent Mode | Autonomous multi-step tasks | Pro |
+| Commit message generation | Suggests git commit messages from staged changes | Free |
+| Workspace-scoped questions | Ask about your whole project directly, in natural language | Free |
+| Copilot CLI | Agentic session in the integrated terminal (type `copilot`) | Free |
+| Copilot Edits (multi-file, via Chat) | Describe a change once, applied across related files as reviewable diffs | Free |
+| Custom instructions | Project-specific conventions applied automatically | Free (scales further on Pro) |
+| Agent Mode | Autonomous multi-step, multi-file tasks | Free (higher limits on Pro) |
 
 GitHub Copilot changes how fast you can write code — but your understanding of Java, Spring Boot, and software design is what lets you use it well. The goal is not to replace thinking, but to remove the friction so you can focus on the parts that matter most.
 
