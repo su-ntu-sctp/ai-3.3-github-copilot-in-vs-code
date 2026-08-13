@@ -6,10 +6,6 @@ GitHub Copilot started as an autocomplete tool. It is now an AI agent that plans
 
 This session covers that full range. We start with the everyday features you'll use constantly, then move into the agentic capabilities that are changing how professional teams work.
 
-**Prerequisites:** Java classes and objects, collections (`ArrayList`, `HashMap`), arrays, try/catch, VS Code
-
-**Duration:** 2 hours
-
 ---
 
 ## Lesson Objectives
@@ -20,7 +16,7 @@ By the end of this lesson, you will be able to:
 2. **Select** the right Copilot chat mode (Ask, Agent, Plan) for the task at hand
 3. **Write** precise prompts and manage context to get dramatically better results
 4. **Apply** Agent Mode to implement a multi-file feature autonomously
-5. **Explain** how Copilot's cloud agent, code review, and MCP integration work in professional teams
+5. 
 
 ---
 
