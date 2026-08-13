@@ -34,8 +34,9 @@ By the end of this lesson, you will be able to:
 | 3 | Prompt and Context Engineering | 25 min |
 | 4 | Agent Mode — Autonomous Development | 25 min |
 | 5 | Code Review with Copilot | 15 min |
-| 6 | Custom Agents | 5 min |
-| 7 | The Cloud Coding Agent and MCP | 10 min |
+| 6 | Custom Agents | 10 min |
+| — | Wrap-up | 5 min |
+| Optional | Beyond the Editor: Cloud Agent and MCP | 5 min |
 
 ---
 
@@ -778,7 +779,7 @@ Select `BillingService.java` and ask for a review focused on the refund logic. T
 
 ---
 
-# Part 6: Custom Agents (5 min)
+# Part 6: Custom Agents (10 min)
 
 You just typed a fairly long review prompt. If code review is something you do regularly, you shouldn't be retyping it.
 
@@ -821,46 +822,6 @@ You get the same structured review without retyping the instructions.
 
 ---
 
-# Part 7: The Cloud Coding Agent and MCP (10 min)
-
-> **Instructor demo.** These run on GitHub rather than your machine.
-
-## The Cloud Coding Agent
-
-Everything so far ran inside VS Code with you watching. The **cloud coding agent** runs on GitHub's servers without you present.
-
-The workflow:
-
-1. You create a **GitHub issue** describing a task — like filing a ticket for a colleague
-2. You **assign the issue to Copilot**
-3. It works in a sandboxed environment — reading the repository, writing code, running tests
-4. It opens a **pull request** with the finished work
-5. You review and merge, or request changes
-
-**Terms, since we haven't used these:**
-
-- **Branch** — a separate copy of the code where changes can be made without affecting the main version
-- **Pull request (PR)** — a proposal to merge a branch into the main code, showing exactly what changed
-- **Diff** — the view of what changed: green added, red removed
-
-**What makes it different:** the agent isn't waiting on you. File three issues, assign them all, close your laptop, come back to three pull requests. Every PR it opens goes through automatic security scanning — vulnerability analysis, secret detection, dependency checks — before you look at it.
-
-**Where it works well:** self-contained features, bugs with clear reproduction steps, adding test coverage, dependency updates.
-
-**Where it struggles:** changes spanning many files with architectural implications. The more design judgement required, the more review it needs.
-
-The same code review capability from Part 5 also runs on pull requests, where it's more capable — it sees the full change in the context of the entire repository rather than one file.
-
-## MCP — Where This Is Heading
-
-**Model Context Protocol (MCP)** is a standard way for AI agents to connect to external systems. With MCP configured, Copilot can — during a single task — query a database schema, read documentation from Confluence or Notion, check whether a CI pipeline passed, or pull design specs from Figma.
-
-**Why this matters:** the limit on what Copilot can do has never really been the model. It's been context. An agent that can only see your open files is guessing about everything else. An agent that can read your actual schema, your actual documentation, and your actual build status is working with the same information you have.
-
-That's the direction — not a smarter autocomplete, but an agent wired into the systems your team already uses.
-
----
-
 # Wrap-Up
 
 ## What to Take Away
@@ -884,6 +845,70 @@ Copilot moved from autocomplete to autonomous agent in about three years. The fe
 What doesn't change is the underlying relationship: **the better you understand the code, the more value you get from the tool.** Engineers who understand systems deeply use this to move considerably faster. Engineers who don't use it to generate code they can't evaluate.
 
 The tool amplifies whichever one you are.
+
+---
+
+# Optional: Beyond the Editor
+
+> **These two topics are covered for awareness, not as hands-on exercises.** Both run outside VS Code — the cloud agent needs a repository with issues and pull requests, and MCP needs server configuration on your machine. They're worth knowing because they're where this technology is heading, but they aren't something you'd set up in your first week with Copilot. Configuration details are included below if you want to try them yourself later.
+
+## The Cloud Coding Agent
+
+Everything in this lesson ran inside VS Code, with you watching. The **cloud coding agent** runs on GitHub's servers, without you present.
+
+The workflow:
+
+1. You create a **GitHub issue** describing a task — like filing a ticket for a colleague
+2. You **assign the issue to Copilot**
+3. It works in a sandboxed environment on GitHub's infrastructure — reading the repository, writing code, running tests
+4. It opens a **pull request** with the finished work
+5. You review and merge, or request changes
+
+**What makes it different:** the agent isn't waiting on you. File three issues, assign them all, close your laptop, and come back to three pull requests. Every PR it opens goes through automatic security scanning — vulnerability analysis, secret detection, dependency checks — before you look at it.
+
+**Where it works well:** self-contained features, bugs with clear reproduction steps, adding test coverage, dependency updates.
+
+**Where it struggles:** changes spanning many files with architectural implications. The more design judgement a task requires, the more review it needs.
+
+The code review capability from Part 5 also runs on pull requests, where it's more capable — it sees the full change in the context of the entire repository rather than one file at a time.
+
+## MCP — Connecting Copilot to Other Systems
+
+By default, Copilot knows two things: what it learned during training, and what's in your editor. It can't look anything up. Ask it what's in your database and it will describe what a database *usually* looks like.
+
+**Model Context Protocol (MCP)** changes that. An MCP server is a small program that sits between Copilot and some real system, exposing a set of actions it can perform — "list files in this folder", "run this query", "fetch this page".
+
+When Copilot needs that information, it **calls the action and gets a real answer back**, rather than predicting one.
+
+With MCP configured, Copilot can — during a single task — query a live database schema, read documentation from Confluence or Notion, check whether a CI pipeline passed, or pull design specs from Figma. The protocol is an open standard, so servers exist for thousands of systems.
+
+**Two constraints worth knowing:**
+
+- MCP tools only work in **Agent mode**. In Ask mode they won't appear, even when configured correctly.
+- Configuration lives in `.vscode/mcp.json` in your workspace, or in your user settings. Workspace config can be committed to Git, so a whole team shares the same setup.
+
+A minimal example — giving Copilot the ability to read files in a specific folder:
+
+```json
+{
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/absolute/path/to/your/project"
+      ]
+    }
+  }
+}
+```
+
+Once a server is running, its tools appear automatically in Agent mode — you don't invoke them by name. You ask a question, and Copilot decides which tool to call.
+
+**Why this matters:** the limit on what Copilot can do has never really been the model. It's been context. An agent that can only see your open files is guessing about everything else. An agent that can read your actual schema, your actual documentation, and your actual build status is working with the same information you have.
+
+That's the direction — not a smarter autocomplete, but an agent wired into the systems your team already uses.
 
 ---
 
