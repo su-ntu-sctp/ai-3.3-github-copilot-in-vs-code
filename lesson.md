@@ -2,11 +2,11 @@
 
 ## Lesson Overview
 
-GitHub Copilot has changed significantly. It started as an autocomplete tool. Today it is an AI agent that can plan work, edit multiple files on its own, review your code, and even take a task description and produce a finished pull request without you touching the keyboard.
+GitHub Copilot started as an autocomplete tool. It is now an AI agent that plans work, edits multiple files on its own, reviews code like a senior engineer, and can take a written task description and produce a finished pull request without you touching the keyboard.
 
-This session covers the full range — starting with the everyday features you'll use constantly, then moving into the agentic capabilities that are reshaping how professional teams actually work.
+This session covers that full range. We start with the everyday features you'll use constantly, then move into the agentic capabilities that are changing how professional teams work.
 
-**Prerequisites:** Java classes and objects, collections (`ArrayList`, `HashMap`), VS Code, basic Git (`clone`, `pull`, `push`)
+**Prerequisites:** Java classes and objects, collections (`ArrayList`, `HashMap`), arrays, try/catch, VS Code
 
 **Duration:** 2 hours
 
@@ -17,9 +17,9 @@ This session covers the full range — starting with the everyday features you'l
 By the end of this lesson, you will be able to:
 
 1. **Use** Copilot's core features — ghost text, chat, and slash commands — to write and understand Java code faster
-2. **Select** the right Copilot chat mode (Ask, Edit, Agent, Plan) for the task at hand
-3. **Write** effective prompts and manage context to get dramatically better results
-4. **Apply** Agent Mode to autonomously implement a multi-file feature
+2. **Select** the right Copilot chat mode (Ask, Agent, Plan) for the task at hand
+3. **Write** precise prompts and manage context to get dramatically better results
+4. **Apply** Agent Mode to implement a multi-file feature autonomously
 5. **Explain** how Copilot's cloud agent, code review, and MCP integration work in professional teams
 
 ---
@@ -28,24 +28,335 @@ By the end of this lesson, you will be able to:
 
 | Part | Topic | Time |
 |---|---|---|
-| 1 | Setup and Core Features | 20 min |
-| 2 | Chat Modes | 15 min |
-| 3 | Prompt and Context Engineering | 20 min |
-| 4 | The Case Study Project | 10 min |
-| 5 | Agent Mode — Autonomous Development | 25 min |
-| 6 | Code Review with Copilot | 15 min |
-| 7 | The Cloud Coding Agent (Demo) | 10 min |
-| 8 | MCP — Where This Is Heading | 5 min |
+| 0 | The Case Study Project | 10 min |
+| 1 | Setup and Core Features | 25 min |
+| 2 | Chat Modes | 10 min |
+| 3 | Prompt and Context Engineering | 25 min |
+| 4 | Agent Mode — Autonomous Development | 25 min |
+| 5 | Code Review with Copilot | 15 min |
+| 6 | Custom Agents | 5 min |
+| 7 | The Cloud Coding Agent and MCP | 10 min |
 
 ---
 
-# Part 1: Setup and Core Features (20 min)
+# Part 0: The Case Study Project (10 min)
+
+Everything in this lesson operates on one codebase — a small e-commerce order and billing system. Four classes, roughly what you'd find in the service layer of a real application.
+
+**You are not building this.** Copy each class into your project and move on. You'll read each one as it becomes relevant.
+
+**Create a folder called `shop` and add these five files.**
+
+### `Product.java`
+
+```java
+public class Product {
+
+    private final String sku;
+    private final String name;
+    private final double unitPrice;
+    private int stockQuantity;
+
+    public Product(String sku, String name, double unitPrice, int stockQuantity) {
+        if (sku == null || sku.isBlank()) {
+            throw new IllegalArgumentException("SKU is required");
+        }
+        if (unitPrice < 0) {
+            throw new IllegalArgumentException("Unit price cannot be negative");
+        }
+        this.sku = sku;
+        this.name = name;
+        this.unitPrice = unitPrice;
+        this.stockQuantity = stockQuantity;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public int getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void reduceStock(int quantity) {
+        stockQuantity = stockQuantity - quantity;
+    }
+
+    @Override
+    public String toString() {
+        return sku + " (" + name + ") $" + unitPrice + " x" + stockQuantity;
+    }
+}
+```
+
+### `PricingService.java`
+
+```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PricingService {
+
+    private static final double MEMBER_DISCOUNT = 0.10;
+    private static final int BULK_THRESHOLD = 10;
+    private static final double BULK_DISCOUNT = 0.05;
+
+    private final Map<String, Product> catalog;
+    private final List<String> auditLog;
+
+    public PricingService() {
+        this.catalog = new HashMap<>();
+        this.auditLog = new ArrayList<>();
+    }
+
+    public void addProduct(Product product) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product is required");
+        }
+        catalog.put(product.getSku(), product);
+    }
+
+    public Product findBySku(String sku) {
+        return catalog.get(sku);
+    }
+
+    public double calculateLineTotal(String sku, int quantity) {
+        Product product = catalog.get(sku);
+        double lineTotal = product.getUnitPrice() * quantity;
+
+        if (quantity > BULK_THRESHOLD) {
+            lineTotal = lineTotal * (1 - BULK_DISCOUNT);
+        }
+
+        return lineTotal;
+    }
+
+    public double calculateOrderTotal(String[] skus, int[] quantities, boolean isMember) {
+        double subtotal = 0;
+
+        for (int i = 0; i <= skus.length; i++) {
+            try {
+                subtotal += calculateLineTotal(skus[i], quantities[i]);
+            } catch (Exception e) {
+                auditLog.add("Skipped item at index " + i);
+            }
+        }
+
+        if (isMember) {
+            subtotal = subtotal - (subtotal * MEMBER_DISCOUNT);
+        }
+
+        int roundedTotal = (int) subtotal;
+        auditLog.add("Order total calculated: " + roundedTotal);
+        return roundedTotal;
+    }
+
+    public List<String> getAuditLog() {
+        return auditLog;
+    }
+}
+```
+
+### `OrderService.java`
+
+```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class OrderService {
+
+    private final PricingService pricingService;
+    private final Map<String, Double> ordersById;
+    private int orderCounter;
+
+    public OrderService(PricingService pricingService) {
+        if (pricingService == null) {
+            throw new IllegalArgumentException("PricingService is required");
+        }
+        this.pricingService = pricingService;
+        this.ordersById = new HashMap<>();
+        this.orderCounter = 0;
+    }
+
+    public String placeOrder(String[] skus, int[] quantities, boolean isMember) {
+        if (skus == null || quantities == null) {
+            throw new IllegalArgumentException("Order items are required");
+        }
+
+        List<String> unavailable = new ArrayList<>();
+        for (int i = 0; i < skus.length; i++) {
+            Product product = pricingService.findBySku(skus[i]);
+            if (product == null) {
+                unavailable.add(skus[i]);
+            } else if (product.getStockQuantity() < quantities[i]) {
+                unavailable.add(skus[i]);
+            }
+        }
+
+        if (!unavailable.isEmpty()) {
+            throw new IllegalStateException("Unavailable items: " + unavailable);
+        }
+
+        double total = pricingService.calculateOrderTotal(skus, quantities, isMember);
+
+        for (int i = 0; i < skus.length; i++) {
+            pricingService.findBySku(skus[i]).reduceStock(quantities[i]);
+        }
+
+        orderCounter++;
+        String orderId = "ORD-" + orderCounter;
+        ordersById.put(orderId, total);
+        return orderId;
+    }
+
+    public double getOrderTotal(String orderId) {
+        return ordersById.get(orderId);
+    }
+
+    public Map<String, Double> getAllOrders() {
+        return ordersById;
+    }
+}
+```
+
+### `BillingService.java`
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+public class BillingService {
+
+    private final OrderService orderService;
+    private final Map<String, String> paymentStatusByOrder;
+    private final Map<String, Double> refundsByOrder;
+
+    public BillingService(OrderService orderService) {
+        if (orderService == null) {
+            throw new IllegalArgumentException("OrderService is required");
+        }
+        this.orderService = orderService;
+        this.paymentStatusByOrder = new HashMap<>();
+        this.refundsByOrder = new HashMap<>();
+    }
+
+    public void recordPayment(String orderId, double amountPaid) {
+        double total = orderService.getOrderTotal(orderId);
+
+        if (amountPaid >= total) {
+            paymentStatusByOrder.put(orderId, "PAID");
+        } else {
+            paymentStatusByOrder.put(orderId, "PARTIAL");
+        }
+    }
+
+    public String getPaymentStatus(String orderId) {
+        return paymentStatusByOrder.get(orderId);
+    }
+
+    public void issueRefund(String orderId, double amount) {
+        double existingRefund = 0;
+        if (refundsByOrder.containsKey(orderId)) {
+            existingRefund = refundsByOrder.get(orderId);
+        }
+        refundsByOrder.put(orderId, existingRefund + amount);
+        paymentStatusByOrder.put(orderId, "REFUNDED");
+    }
+
+    public double getTotalRefunded(String orderId) {
+        if (refundsByOrder.containsKey(orderId)) {
+            return refundsByOrder.get(orderId);
+        }
+        return 0;
+    }
+
+    public void printInvoice(String orderId) {
+        System.out.println("--- Invoice " + orderId + " ---");
+        System.out.println("Total:    $" + orderService.getOrderTotal(orderId));
+        System.out.println("Status:   " + getPaymentStatus(orderId));
+        System.out.println("Refunded: $" + getTotalRefunded(orderId));
+    }
+}
+```
+
+### `ShopDemo.java`
+
+```java
+public class ShopDemo {
+
+    public static void main(String[] args) {
+        PricingService pricingService = new PricingService();
+        pricingService.addProduct(new Product("SKU-1", "Mechanical Keyboard", 129.99, 50));
+        pricingService.addProduct(new Product("SKU-2", "USB-C Cable", 12.50, 200));
+        pricingService.addProduct(new Product("SKU-3", "Monitor Stand", 79.00, 15));
+
+        OrderService orderService = new OrderService(pricingService);
+        BillingService billingService = new BillingService(orderService);
+
+        String[] skus = {"SKU-1", "SKU-2"};
+        int[] quantities = {1, 10};
+
+        String orderId = orderService.placeOrder(skus, quantities, true);
+        System.out.println("Placed order: " + orderId);
+
+        billingService.recordPayment(orderId, 200.00);
+        billingService.printInvoice(orderId);
+
+        System.out.println();
+        System.out.println("Audit log:");
+        for (String entry : pricingService.getAuditLog()) {
+            System.out.println("  " + entry);
+        }
+    }
+}
+```
+
+## Run It
+
+Run `ShopDemo.java`. You should see:
+
+```
+Placed order: ORD-1
+--- Invoice ORD-1 ---
+Total:    $229.0
+Status:   PARTIAL
+Refunded: $0.0
+
+Audit log:
+  Skipped item at index 2
+  Order total calculated: 229
+```
+
+**Look at that output carefully.** The program ran without crashing and produced a plausible invoice. But there are already two problems visible in those seven lines:
+
+- `Skipped item at index 2` — the order only had two items, at index 0 and 1. What is index 2?
+- The total is a round `$229.0`. Real prices were `$129.99` and `$12.50` each. Where did the cents go?
+
+We'll let Copilot find these — and several more you can't see yet.
+
+> This is what makes the codebase useful for the lesson. It compiles, it runs, it looks fine. That's exactly the kind of code that reaches production and quietly costs money.
+
+---
+
+# Part 1: Setup and Core Features (25 min)
 
 ## What Copilot Actually Is
 
-Copilot is an AI model that reads your code as context and predicts what should come next. That's the core mechanism behind everything in this lesson — inline suggestions, chat answers, and autonomous agents are all the same underlying capability, exposed through different interfaces.
+Copilot is an AI model that reads your code as context and predicts what should come next. Everything in this lesson — inline suggestions, chat answers, autonomous agents — is that same mechanism exposed through different interfaces.
 
-The practical implication: **the quality of what you get out is determined by the quality of the context you put in.** We'll return to this repeatedly.
+The practical consequence: **output quality is determined by input context.** We'll come back to this repeatedly.
 
 ## Step 1: Install and Sign In
 
@@ -56,683 +367,523 @@ The practical implication: **the quality of what you get out is determined by th
 5. Click the **Accounts** icon at the bottom of the sidebar → **Sign in with GitHub**
 6. Check the bottom status bar — the Copilot icon should be visible and active
 
-> **Note:** You have GitHub Copilot Business through this programme, which includes every feature in this lesson.
+> You have GitHub Copilot Business through this programme, which includes every feature in this lesson.
 
-## Step 2: Ghost Text
+## Step 2: Ghost Text and the Suggestion Toolbar
 
-As you type, Copilot shows suggestions in grey. This is called ghost text.
+As you type, Copilot shows suggestions in grey. This is **ghost text**. When it appears, a small **floating toolbar** appears above it:
 
-| Action | Shortcut |
+| Control | What it does |
 |---|---|
-| Accept suggestion | `Tab` |
-| Reject suggestion | `Esc` |
-| Next suggestion | `Alt + ]` |
-| Previous suggestion | `Alt + [` |
-| Trigger manually | `Alt + \` |
+| **`<` `>` arrows** | Cycle through alternative suggestions |
+| **Accept** (`Tab`) | Take the entire suggestion |
+| **Accept Word** (`Ctrl + →`) | Take just the next word, then keep typing your own |
+| **`Esc`** | Dismiss the suggestion |
 
-**Try it now.** Create a file called `Scratch.java` and type:
+**Use the toolbar rather than memorising shortcuts.** It shows the keyboard equivalents next to each action, so you'll pick them up naturally.
+
+**Accept Word is the one worth knowing.** When a suggestion starts right and goes wrong halfway, you don't have to accept everything and delete. Take it word by word until it stops being useful, then type your own.
+
+**Try it now.** Create a scratch file and type this signature, then press Enter:
 
 ```java
-public class Scratch {
-
-    // Returns the number of business days between two dates, excluding weekends
-    
-}
+    public static int countVowels(String text) {
 ```
 
-Press `Enter` after the comment and wait. Copilot will write the method. Press `Tab` to accept.
+When the suggestion appears:
 
-Notice what just happened: you described intent in a comment, and Copilot produced an implementation. This is the simplest form of prompt engineering — and it's already the core skill.
+1. Click the **`>` arrow** to see an alternative implementation
+2. Click **`<`** to go back
+3. Press `Ctrl + →` a few times — watch it accept one word at a time
+4. Press `Esc` to dismiss the rest
+5. Press `Tab` on the next suggestion to accept it fully
+
+> **You may also see a green highlighted block appear on its own.** That's **Next Edit Suggestion** — a separate feature that predicts an edit *elsewhere in the file*, based on a change you just made, rather than at your cursor. Accept it with `Tab`, dismiss with `Esc`.
+
+> Older material lists `Alt + ]` and `Alt + [` for cycling suggestions. These only work on true ghost text and behave inconsistently across platforms. The toolbar arrows do the same job reliably.
 
 ## Step 3: Copilot Chat
 
-Open Chat with `Ctrl+Alt+I`. This is a conversation about your code rather than an autocomplete.
+Open Chat with `Ctrl+Alt+I`. **Set the mode dropdown at the bottom of the chat box to `Ask`** — this means Copilot will answer and propose code, but won't modify your files until you tell it to.
 
-**Slash commands** are shortcuts for common requests:
+Slash commands are shortcuts for common requests:
 
 | Command | What it does |
 |---|---|
 | `/explain` | Explains the selected code |
 | `/fix` | Finds and fixes bugs in the selected code |
 | `/tests` | Generates unit tests |
-| `/doc` | Generates documentation comments |
 
-**Try `/fix` now.** Create `Buggy.java`:
+### `/explain` — Understanding Code
 
-```java
-public class Buggy {
+Open `PricingService.java`, select the `calculateOrderTotal` method, and type:
 
-    public double calculateAverage(int[] numbers) {
-        int sum = 0;
-        for (int i = 0; i <= numbers.length; i++) {
-            sum += numbers[i];
-        }
-        return sum / numbers.length;
-    }
-}
+```
+/explain
 ```
 
-Select all the code, open Chat, type `/fix`, and press Enter.
+Copilot walks through what the method does. Notice it also flags problems as it goes — the loop reading past the end of the array, the cast that discards cents.
 
-Copilot should find three problems: the loop runs one index too far (`<=` should be `<`), integer division truncates the result, and there's no handling for an empty array.
+**It tells you what's wrong. It doesn't change anything.**
 
-> **About `/tests`:** Copilot will generate a complete JUnit test class, but we don't have a build tool (Maven or Gradle) in this project yet, so there's no JUnit library available to actually run them. For today, use `/tests` to **read and review** what good test coverage looks like. You'll run these for real once we move to Spring Boot.
+### `/fix` — Correcting Code
 
-> **About `/doc`:** Depending on your version, `/doc` may ask what kind of documentation you want — a docs folder, HTML output, or code comments. Choose **Java comments** for inline Javadoc.
+Same selection, now type:
+
+```
+/fix
+```
+
+Same diagnosis, but this time you get corrected code. Hover over the code block in the chat panel and click **Apply in Editor** — the change appears in your file as a diff you can keep or undo.
+
+> **The distinction:** `/explain` gives you understanding, you do the work. `/fix` gives you the patch. Use `/explain` on unfamiliar code you've inherited; use `/fix` when you already understand the context.
+
+### `/tests` — Generating Test Cases
+
+Select `calculateLineTotal` and type:
+
+```
+/tests
+```
+
+Copilot produces a full JUnit test class. Read what it generated — notice it didn't test random values. It grouped inputs into categories that could behave differently: normal quantities, quantities at the bulk threshold, quantities above it, zero, negatives, unknown SKUs.
+
+That's **equivalence partitioning** — the same reasoning you'd apply writing tests by hand. Reading Copilot's groupings is a useful way to check your own coverage.
+
+> **We can't run these.** There's no build tool (Maven or Gradle) configured in this project, so JUnit isn't on the classpath. For today, `/tests` is a reading exercise. Once we move to Spring Boot, this becomes something you'll use for real.
+
+### Slash Commands Take Arguments
+
+This is the part most people never discover. **A bare slash command is a default — Copilot guesses what you want. Add text after it and you're giving a scoped instruction.**
+
+Try each of these on `PricingService`:
+
+```
+/explain Focus on the loop logic only, ignore the discount calculations
+```
+
+```
+/fix Fix only the integer truncation problem, leave the loop alone
+```
+
+```
+/tests Only test the error paths — unknown SKU and empty arrays
+```
+
+Run that `/fix` example and check the result carefully: **did it actually leave the loop alone, or did it "helpfully" fix the off-by-one anyway?**
+
+Either answer is worth seeing. If it respected your constraint, that's precise scoping. If it overrode you, that's a lesson in verifying output rather than trusting instructions were followed.
+
+> **Why this matters in production:** you often want a narrow, reviewable change — not a broad rewrite touching code you didn't ask about. Scoping the command gives you that.
+
+### Generating Documentation
+
+**Javadoc** is Java's standard documentation format — a comment block above a method describing what it does, its parameters, its return value, and the exceptions it can throw. It's what appears in IDE tooltips when someone calls your method.
+
+Select `calculateOrderTotal` and ask:
+
+```
+Add Javadoc to this method, documenting all parameters, the return value, 
+and any exceptions it can throw
+```
+
+Then click **Apply in Editor**.
+
+> **Note:** older material references a `/doc` slash command for this. It's been folded into general chat and may not exist in your version. This is the pattern with Copilot — shortcuts come and go, but the capability stays. **If a command disappears, write the prompt yourself.** That skill doesn't expire.
 
 ---
 
-# Part 2: Chat Modes (15 min)
+# Part 2: Chat Modes (10 min)
 
-This is the most important concept in the lesson, and the one most people miss.
-
-Copilot Chat operates in four different modes. There's a **mode selector dropdown in the chat input box** — it's small and easy to overlook, but it fundamentally changes what Copilot does with your request.
+Copilot Chat operates in different modes, selected from a **dropdown at the bottom of the chat input**. The mode changes what Copilot is permitted to do with your request.
 
 | Mode | Behaviour | Use it when |
 |---|---|---|
-| **Ask** | Answers questions and explains code. Never modifies files. | You want to understand something |
-| **Edit** | Makes changes to files you specify. You review each change. | You know exactly what you want changed |
-| **Agent** | Decides which files to change, makes the changes, runs commands, and iterates on errors. | You want a task completed, not a specific edit |
-| **Plan** | Explores the codebase and produces a written plan for your approval before writing any code. | The task is large or risky |
+| **Ask** | Answers and proposes code. Makes no changes unless you click Apply. | You want to understand something, or review a suggestion before it lands |
+| **Agent** | Decides which files to change, edits them, runs commands, and iterates on errors. | You want a task completed, not a specific edit |
+| **Plan** | Explores the codebase, asks clarifying questions, and produces a reviewable plan before writing any code. | The task is large, unfamiliar, or risky |
 
-**The key distinction:** Ask and Edit do what you tell them. **Agent decides for itself** what needs to happen — which files to open, what to change, whether to run a command, and whether the result is correct.
+**The key distinction:** Ask does what you tell it. **Agent decides for itself** — which files to open, what to change, whether to run a command, and whether the result is correct. That autonomy is the whole point, and also the whole risk.
 
-**Try this now.** Open Chat and find the mode dropdown. Switch between Ask and Agent and notice the interface changes slightly. Set it back to **Agent** — we'll use it later.
+**Try it now.** Open the mode dropdown and look at the options. **Leave it on Ask** — we'll switch to Agent in Part 4.
 
-> **Note:** Agent is often the default mode. If Copilot has ever edited a file you didn't explicitly point it at, that's why.
+> **A note on Edit mode:** you may find older tutorials referencing a fourth mode called Edit, or a separate "Copilot Edits" panel. It's been removed and absorbed into Agent, which does everything Edit did plus tool use and error correction. If a tutorial tells you to select Edit and you can't find it, that's why.
+
+> **Custom agents:** the dropdown also has **Configure Custom Agents**. You can define your own mode — a named agent with its own instructions, tools, and preferred model. We'll build one in Part 6.
 
 ---
 
-# Part 3: Prompt and Context Engineering (20 min)
+# Part 3: Prompt and Context Engineering (25 min)
 
-Two things control the quality of Copilot's output. Getting these right is the difference between a tool that occasionally helps and one that meaningfully speeds you up.
+Two things control output quality. Getting these right is the difference between a tool that occasionally helps and one that meaningfully changes your pace.
 
 ## Context: What Copilot Can See
 
-Copilot doesn't read your entire project on every request. It sees:
+Copilot doesn't read your whole project on every request. It sees:
 
 - The file you're currently in
 - Code you've selected
 - **Other files you have open in tabs**
 - Files you explicitly attach to a chat message
-- In Agent mode: files it searches for and opens on its own
+- In Agent mode: files it finds and opens on its own
 
-**Practical rule:** if your question involves two classes, open both files before asking. If you ask "how does `TicketQueue` use `Ticket`?" with only one file open, Copilot is working with half the picture.
+### Demonstrating This
 
-**To attach a file explicitly:** click the paperclip / **Add Context** button in the chat input and select the file. This is more reliable than hoping the right tab is open.
+**With only `OrderService.java` open**, ask in Chat:
+
+```
+How is the final order total calculated? Walk me through every discount 
+that gets applied.
+```
+
+Copilot can see `placeOrder` calls `pricingService.calculateOrderTotal(...)` — but it can't see inside that method. It will describe the parts it can see and become vague or speculative about the discount logic.
+
+**Now attach `PricingService.java`.** Click the **paperclip / Add Context** button in the chat input, select the file, and ask the same question.
+
+Now it can trace the whole path: line totals, the bulk discount above 10 units, the member discount, and the truncation at the end. Same question, completely different answer.
+
+**Practical rule:** if your question spans two classes, Copilot needs to see both. Attaching files explicitly is more reliable than hoping the right tab is open.
+
+> **Try attaching all four service classes at once** and ask: *"Trace what happens from placeOrder through to printInvoice. Which class is responsible for each step?"* This is where the tool becomes genuinely useful on an unfamiliar codebase — it's reading the call chain for you.
 
 ## Prompting: Say What You Actually Want
 
-Here's a demonstration worth doing carefully, because the contrast is stark.
+Here's a contrast worth doing carefully.
 
-**Create `Order.java`:**
+Both prompts below target the same method — `calculateOrderTotal` in `PricingService`. Select it before each one.
 
-```java
-public class Order {
-    private String customerId;
-    private double amount;
-    private String status;
-
-    public Order(String customerId, double amount, String status) {
-        this.customerId = customerId;
-        this.amount = amount;
-        this.status = status;
-    }
-
-    public double applyDiscount(double percent) {
-        if (status.equals("ACTIVE")) {
-            if (amount > 100) {
-                if (percent > 0 && percent <= 50) {
-                    amount = amount - (amount * percent / 100);
-                }
-            }
-        }
-        return amount;
-    }
-}
-```
-
-**Prompt A — vague:**
+### Prompt A
 
 ```
-make this better
+This method is messy and hard to follow. Clean it up, make it more robust, 
+and follow best practices.
 ```
 
-**Prompt B — specific:**
+This is a *reasonable-sounding* request. It's the kind of thing people write constantly. But look at what it actually communicates: nothing specific. "Robust" against what? "Best practices" by whose definition? Which parts are you willing to have changed?
+
+Copilot will do *something*. It may restructure the loop, rename variables, extract helper methods, change the return type, add validation you didn't want, or all of the above. The result might be fine. You now have to read every line to find out.
+
+### Prompt B
 
 ```
-Refactor applyDiscount to use guard clauses instead of nested if statements. 
-Throw IllegalArgumentException if percent is outside 0-50. Do not change 
-the method signature or the discount calculation itself.
+Fix three specific problems in this method, changing nothing else:
+1. The loop reads one index past the end of the array
+2. The catch block swallows real errors — it should not catch generic Exception
+3. Casting the total to int discards cents — return the exact double value
+
+Do not change the method signature, the discount percentages, or the audit 
+log messages.
 ```
 
-Run both. Prompt A produces *a* change — possibly renaming things, possibly restructuring the whole class, possibly adding features you didn't ask for. Prompt B produces exactly the change you specified.
+Run both and compare the diffs.
 
-**The pattern that works:**
+Prompt B produces exactly three changes, each one reviewable in seconds. Prompt A produces a rewrite you have to audit.
 
-| Element | Example |
+### The Pattern That Works
+
+| Element | Example from Prompt B |
 |---|---|
-| **Action** | "Refactor", "Add", "Extract" |
-| **Target** | "the `applyDiscount` method" |
-| **Constraint** | "without changing the method signature" |
-| **Standard** | "using guard clauses" |
+| **Action** | "Fix" |
+| **Target** | "three specific problems in this method" |
+| **Constraint** | "changing nothing else", "do not change the method signature" |
+| **Standard** | "return the exact double value" |
 
-If you can write a clear Jira ticket, you can write a good Copilot prompt. It's the same skill.
+## Why This Requires Knowing Java
+
+Look again at Prompt B. To write it, you had to know:
+
+- That `i <= array.length` is an off-by-one error
+- That `catch (Exception e)` is too broad and hides real failures
+- That casting a `double` to `int` truncates rather than rounds
+- That method signatures are a contract other code depends on
+
+**None of that came from Copilot. It came from you.**
+
+This is the honest answer to "why do I still need to learn the fundamentals if AI writes the code." Prompt A is what you write when you don't know what's wrong. Prompt B is what you write when you do. The gap between those two prompts is the gap between accepting whatever you're given and directing the work.
+
+The engineers who get the most out of these tools are not the ones who've memorised the most prompts. They're the ones who understand their code well enough to say precisely what they want — and to recognise when the answer is wrong.
+
+**Learn the fundamentals so you can stay in charge of the output.**
 
 ## Custom Instructions: Prompting Once, Permanently
 
 Rather than repeating your standards in every prompt, write them once in a file Copilot reads automatically.
 
-**Create `.github/copilot-instructions.md`** in your project root:
+In your terminal, from the project root:
 
 ```bash
 mkdir -p .github
 ```
 
-Then create `.github/copilot-instructions.md` with:
+Create `.github/copilot-instructions.md`:
 
 ```markdown
 # Project Conventions
 
 - Validate method parameters and throw IllegalArgumentException for invalid input
+- Never catch generic Exception — catch the specific type you expect
+- Use BigDecimal or exact double arithmetic for money; never truncate to int
 - Use guard clauses rather than nested conditionals
 - Add Javadoc to all public methods
-- Use enums for fixed sets of values, never String constants
-- Prefer immutable fields where a value should not change after construction
+- Return defensive copies of collections from getters
 ```
 
-Every Copilot suggestion in this project now follows these rules without you asking. This is how teams keep AI-generated code consistent with their standards.
+Every suggestion in this project now follows these rules without being asked. This is how teams keep AI-generated code consistent with their standards.
 
-> Custom instructions strongly influence output, but don't guarantee it. Still review.
+**Test it.** Ask Copilot to add a new method to `BillingService`:
+
+```
+Add a method to calculate the outstanding balance for an order — the total 
+minus any payments and refunds recorded.
+```
+
+Check the result against the conventions file. Did it validate parameters? Avoid truncating money? Add Javadoc?
+
+> Custom instructions strongly influence output. They don't guarantee it. Still review.
 
 ---
 
-# Part 4: The Case Study Project (10 min)
+# Part 4: Agent Mode — Autonomous Development (25 min)
 
-We'll use a support ticket system for the rest of the lesson. It's small enough to understand quickly, but has enough real logic — state transitions, priority handling, assignment rules — that Copilot's agentic features have something meaningful to work with.
+Everything so far has been you directing Copilot precisely. Agent Mode is different: you describe an outcome, and it works out the steps.
 
-**Create these four files.**
+## What Agent Mode Does
 
-### `Priority.java`
+Given a task, it:
 
-```java
-public enum Priority {
-    LOW,
-    MEDIUM,
-    HIGH,
-    CRITICAL
-}
-```
-
-### `TicketStatus.java`
-
-```java
-public enum TicketStatus {
-    OPEN,
-    IN_PROGRESS,
-    RESOLVED,
-    CLOSED
-}
-```
-
-### `Ticket.java`
-
-```java
-public class Ticket {
-
-    private final String id;
-    private final String title;
-    private final String description;
-    private Priority priority;
-    private TicketStatus status;
-    private String assignedAgentId;
-    private final long createdAtMillis;
-
-    public Ticket(String id, String title, String description, Priority priority) {
-        if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("Ticket id is required");
-        }
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Ticket title is required");
-        }
-        if (priority == null) {
-            throw new IllegalArgumentException("Priority is required");
-        }
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.priority = priority;
-        this.status = TicketStatus.OPEN;
-        this.assignedAgentId = null;
-        this.createdAtMillis = System.currentTimeMillis();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        if (priority == null) {
-            throw new IllegalArgumentException("Priority is required");
-        }
-        this.priority = priority;
-    }
-
-    public TicketStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TicketStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Status is required");
-        }
-        this.status = status;
-    }
-
-    public String getAssignedAgentId() {
-        return assignedAgentId;
-    }
-
-    public void setAssignedAgentId(String assignedAgentId) {
-        this.assignedAgentId = assignedAgentId;
-    }
-
-    public long getCreatedAtMillis() {
-        return createdAtMillis;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + id + "] " + title
-                + " | " + priority
-                + " | " + status
-                + " | agent=" + (assignedAgentId == null ? "unassigned" : assignedAgentId);
-    }
-}
-```
-
-### `SupportAgent.java`
-
-```java
-public class SupportAgent {
-
-    private final String agentId;
-    private final String name;
-    private final int maxOpenTickets;
-    private int currentOpenTickets;
-
-    public SupportAgent(String agentId, String name, int maxOpenTickets) {
-        if (agentId == null || agentId.isBlank()) {
-            throw new IllegalArgumentException("Agent id is required");
-        }
-        if (maxOpenTickets < 1) {
-            throw new IllegalArgumentException("maxOpenTickets must be at least 1");
-        }
-        this.agentId = agentId;
-        this.name = name;
-        this.maxOpenTickets = maxOpenTickets;
-        this.currentOpenTickets = 0;
-    }
-
-    public String getAgentId() {
-        return agentId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getMaxOpenTickets() {
-        return maxOpenTickets;
-    }
-
-    public int getCurrentOpenTickets() {
-        return currentOpenTickets;
-    }
-
-    public boolean hasCapacity() {
-        return currentOpenTickets < maxOpenTickets;
-    }
-
-    public void assignTicket() {
-        if (!hasCapacity()) {
-            throw new IllegalStateException("Agent " + agentId + " is at capacity");
-        }
-        currentOpenTickets++;
-    }
-
-    public void releaseTicket() {
-        if (currentOpenTickets > 0) {
-            currentOpenTickets--;
-        }
-    }
-}
-```
-
-### `TicketQueue.java`
-
-```java
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class TicketQueue {
-
-    private final Map<String, Ticket> ticketsById;
-    private final Map<String, SupportAgent> agentsById;
-
-    public TicketQueue() {
-        this.ticketsById = new HashMap<>();
-        this.agentsById = new HashMap<>();
-    }
-
-    public void registerAgent(SupportAgent agent) {
-        if (agent == null) {
-            throw new IllegalArgumentException("Agent is required");
-        }
-        agentsById.put(agent.getAgentId(), agent);
-    }
-
-    public void submitTicket(Ticket ticket) {
-        if (ticket == null) {
-            throw new IllegalArgumentException("Ticket is required");
-        }
-        if (ticketsById.containsKey(ticket.getId())) {
-            throw new IllegalArgumentException("Duplicate ticket id: " + ticket.getId());
-        }
-        ticketsById.put(ticket.getId(), ticket);
-    }
-
-    public Ticket findById(String ticketId) {
-        return ticketsById.get(ticketId);
-    }
-
-    public List<Ticket> findByStatus(TicketStatus status) {
-        List<Ticket> result = new ArrayList<>();
-        for (Ticket ticket : ticketsById.values()) {
-            if (ticket.getStatus() == status) {
-                result.add(ticket);
-            }
-        }
-        return result;
-    }
-
-    public boolean assignTicket(String ticketId, String agentId) {
-        Ticket ticket = ticketsById.get(ticketId);
-        SupportAgent agent = agentsById.get(agentId);
-
-        if (ticket == null || agent == null) {
-            return false;
-        }
-        if (ticket.getStatus() != TicketStatus.OPEN) {
-            return false;
-        }
-        if (!agent.hasCapacity()) {
-            return false;
-        }
-
-        agent.assignTicket();
-        ticket.setAssignedAgentId(agentId);
-        ticket.setStatus(TicketStatus.IN_PROGRESS);
-        return true;
-    }
-
-    public boolean resolveTicket(String ticketId) {
-        Ticket ticket = ticketsById.get(ticketId);
-        if (ticket == null) {
-            return false;
-        }
-        if (ticket.getStatus() != TicketStatus.IN_PROGRESS) {
-            return false;
-        }
-
-        SupportAgent agent = agentsById.get(ticket.getAssignedAgentId());
-        if (agent != null) {
-            agent.releaseTicket();
-        }
-        ticket.setStatus(TicketStatus.RESOLVED);
-        return true;
-    }
-
-    public void printQueueSummary() {
-        System.out.println("=== Ticket Queue ===");
-        for (Ticket ticket : ticketsById.values()) {
-            System.out.println(ticket);
-        }
-        System.out.println("Open: " + findByStatus(TicketStatus.OPEN).size()
-                + " | In progress: " + findByStatus(TicketStatus.IN_PROGRESS).size()
-                + " | Resolved: " + findByStatus(TicketStatus.RESOLVED).size());
-    }
-
-    public static void main(String[] args) {
-        TicketQueue queue = new TicketQueue();
-
-        queue.registerAgent(new SupportAgent("A1", "Priya", 2));
-        queue.registerAgent(new SupportAgent("A2", "Marcus", 1));
-
-        queue.submitTicket(new Ticket("T-100", "Login fails on mobile",
-                "Users report 500 error on mobile login", Priority.CRITICAL));
-        queue.submitTicket(new Ticket("T-101", "Export button misaligned",
-                "Minor CSS issue on reports page", Priority.LOW));
-        queue.submitTicket(new Ticket("T-102", "Payment webhook timing out",
-                "Webhook retries exhausted after 30s", Priority.HIGH));
-
-        queue.assignTicket("T-100", "A1");
-        queue.assignTicket("T-102", "A2");
-        queue.resolveTicket("T-100");
-
-        queue.printQueueSummary();
-    }
-}
-```
-
-**Run `TicketQueue.java`** and confirm you see the summary output. This is our working system for the rest of the session.
-
----
-
-# Part 5: Agent Mode — Autonomous Development (25 min)
-
-Everything so far has been you directing Copilot precisely. Agent Mode is different: you describe an outcome, and Copilot works out the steps.
-
-## What Agent Mode Actually Does
-
-When you give Agent Mode a task, it:
-
-1. Searches your project to understand the existing structure
-2. Decides which files need to be created or modified
-3. Makes the changes across all of them
-4. Runs commands if needed (compiling, running the program)
-5. Reads any errors and fixes them
+1. Searches your project to understand the structure
+2. Decides which files need creating or modifying
+3. Makes changes across all of them
+4. Runs commands if needed — compiling, running the program
+5. Reads any errors and corrects itself
 6. Presents everything for you to keep or undo
 
-Steps 4 and 5 are what separate this from everything else. It doesn't just write code — it checks whether the code worked and corrects itself.
+Steps 4 and 5 are what separate this from everything else. It doesn't just write code — it checks whether the code worked.
 
-## Demo: Adding SLA Tracking
+## Demo: Adding Refund Validation
 
-**Set the mode dropdown to Agent.** Then enter this prompt:
+**Switch the mode dropdown to Agent.** Then:
 
 ```
-Add SLA breach tracking to the support ticket system.
+Add refund validation to the billing system.
 
 Requirements:
-- Each Priority has a target resolution time: CRITICAL 1 hour, HIGH 4 hours, 
-  MEDIUM 24 hours, LOW 72 hours
-- Add a method to Ticket that reports whether it has breached its SLA, based 
-  on how long it has been open and its current status
-- Resolved and closed tickets never count as breached
-- Add a method to TicketQueue that returns all breached tickets
-- Update printQueueSummary to show a count of breached tickets
-- Update main to demonstrate a breach by creating a ticket with an old timestamp
+- A refund cannot exceed the order total
+- Total refunds across multiple partial refunds cannot exceed the order total
+- Refunds can only be issued against orders that have been paid
+- Throw IllegalStateException with a clear message when a refund is invalid
+- Only mark an order REFUNDED when the full total has been refunded; use 
+  PARTIALLY_REFUNDED otherwise
+- Update ShopDemo to demonstrate a valid refund, a partial refund, and a 
+  rejected over-refund
 
-Follow the existing code style and validation approach.
+Follow the existing code style.
 ```
 
-**Watch what happens.** Copilot will work through the files one at a time. You'll see it open files, make edits, and show you a running summary of what it's doing.
+**Watch what it does.** It will work through the files one at a time, showing what it's changing as it goes.
 
 **When it finishes:**
 
 1. Review each changed file — click through the diffs
-2. Look specifically at how it handled the "old timestamp" requirement, since `createdAtMillis` is `final` and set in the constructor. There's no obvious way to do this without changing the class design. **How did Copilot solve it?** This is worth discussing — it had to make a design decision you didn't specify.
-3. Run `TicketQueue.java` and confirm the output shows breach information
+2. Check how it handled the "paid" requirement. `getPaymentStatus` returns a `String`, and the existing code uses string literals like `"PAID"`. Did Copilot keep using strings, or did it introduce an enum? **You didn't specify.** It made that decision for you.
+3. Run `ShopDemo.java` and confirm all three refund scenarios behave correctly
 4. Click **Keep** to accept, or **Undo** to revert
 
 ## The Point of That Exercise
 
-Notice you didn't tell it to add a constructor overload, or a package-private setter, or whatever approach it chose. You described the outcome, and it made design decisions on your behalf.
+You didn't tell it to add an enum, or a private helper, or whatever approach it chose. You described an outcome and it made design decisions on your behalf.
 
-**That's the risk and the value in the same sentence.** Agent Mode will make choices you didn't authorise, and it makes them fast. On a task you understand well, that's leverage. On a task you don't, you've just merged decisions you can't evaluate.
+**That's the value and the risk in one sentence.** On code you understand, that's leverage — it did in two minutes what would have taken you twenty. On code you don't understand, you've just merged decisions you can't evaluate.
 
 ## Plan Mode
 
-If you want to see the reasoning before any code changes, switch the dropdown to **Plan**.
+To see the reasoning before any code changes, switch the dropdown to **Plan**.
 
-**Try the same prompt in Plan mode.** Instead of editing files, Copilot produces a written implementation plan — which files it intends to change and why. You approve the plan, and only then does it execute.
+**Try the same prompt in Plan mode.** Instead of editing files, Copilot produces a written implementation plan — which files it intends to change and why. You approve, and only then does it execute.
 
-For anything touching unfamiliar or high-risk code, this is the safer default.
+For unfamiliar or high-risk code, this is the safer default.
 
 ## Activity (10 min)
 
 Using **Agent Mode**, implement this yourself:
 
 ```
-Add an escalation feature to the support ticket system.
+Add stock restoration to the order system.
 
 Requirements:
-- A ticket can be escalated, which raises its priority by one level 
-  (LOW to MEDIUM, MEDIUM to HIGH, HIGH to CRITICAL)
-- CRITICAL tickets cannot be escalated further and should throw 
-  IllegalStateException
-- Escalation should only be allowed on OPEN or IN_PROGRESS tickets
-- Track how many times each ticket has been escalated
-- Add a TicketQueue method to escalate a ticket by id, returning false 
-  if the ticket doesn't exist
-- Demonstrate escalation in main, including a failure case
+- Add a cancelOrder method to OrderService that restores the stock 
+  quantities reserved by that order
+- An order that has already been cancelled cannot be cancelled again
+- An order that has been paid cannot be cancelled — throw IllegalStateException
+- Product needs a way to add stock back
+- Track which orders have been cancelled
+- Demonstrate in ShopDemo: a successful cancellation showing stock restored, 
+  and a rejected cancellation on a paid order
 
 Follow the existing code style.
 ```
 
-Review every change before accepting. Specifically check: did it handle the `CRITICAL` boundary correctly? Did it validate status before escalating?
+Review every change before accepting. Check specifically: does it restore the *correct* quantities, and does it prevent double-cancellation?
 
 ---
 
-# Part 6: Code Review with Copilot (15 min)
+# Part 5: Code Review with Copilot (15 min)
 
-Copilot can review code the way a senior engineer would — looking for correctness issues, edge cases, and design problems rather than formatting.
+Copilot can review code the way a senior engineer would — looking for correctness and design problems rather than formatting.
 
-## Local Review in VS Code
+**Switch back to Ask mode.**
 
-Open `TicketQueue.java`, select the entire file, and in Chat (Ask mode) enter:
+## Reviewing the Pricing Logic
+
+Open `PricingService.java`, select the whole file, and ask:
 
 ```
 Review this class for correctness bugs, unhandled edge cases, and design 
-problems. Focus on the assignment and resolution logic. For each issue, 
-explain the specific scenario where it causes a problem.
+problems. For each issue, explain the specific scenario where it causes a 
+failure in production.
 ```
 
-**Things Copilot should surface:**
+**What it should find:**
 
-- `resolveTicket` releases the agent's capacity, but nothing handles a ticket being reassigned or cancelled — the count can drift out of sync
-- There's no way to move a ticket to `CLOSED` at all, despite the enum defining it
-- `findByStatus` returns a new list, but the `Ticket` objects inside are the live ones — callers can mutate queue state through the returned list
-- `submitTicket` rejects duplicate IDs but `registerAgent` silently overwrites an existing agent
-- No handling for what happens to assigned tickets when an agent is removed or unavailable
+- **The loop reads past the end of the array** — `i <= skus.length` accesses an index that doesn't exist
+- **The catch block hides that bug** — `catch (Exception e)` swallows the `ArrayIndexOutOfBoundsException`, so the program logs a harmless-looking message and continues. This is why the bug survived to production
+- **`calculateLineTotal` doesn't check for null** — an unknown SKU throws `NullPointerException`, also swallowed by the same catch
+- **The bulk threshold is off by one** — `quantity > 10` means ordering exactly 10 gets no bulk discount, which almost certainly isn't what the business intended
+- **Money is truncated, not rounded** — `(int) subtotal` silently discards cents on every single order
+- **`getAuditLog` returns the live list** — any caller can modify the service's internal state
 
-**This is the demonstration that matters most for experienced engineers.** These aren't style suggestions — they're real design flaws that would cause production incidents. Read through them and decide which you agree with.
+**This is the demonstration that matters most.** These aren't style suggestions. Every one of them would cause a real incident — under-charging customers, losing revenue to truncation, or a corrupted audit trail.
 
-> **Ask it to justify itself.** Follow up with: "Which of these would you fix first and why?" The reasoning quality tells you how much to trust the findings.
+> **Ask it to prioritise.** Follow up with: *"Which of these would you fix first, and why?"* The quality of its reasoning tells you how much to trust the findings.
+
+## Reviewing Across Classes
+
+Attach `OrderService.java` and `BillingService.java`, then ask:
+
+```
+Looking at these three classes together, what problems exist in how they 
+interact? Focus on data consistency and error handling across the boundaries.
+```
+
+This surfaces things a single-file review can't:
+
+- `OrderService` reduces stock, but nothing restores it if billing fails afterwards
+- `getOrderTotal` returns a `Double` from a map — an unknown order ID returns `null` and throws `NullPointerException` on unboxing
+- `BillingService.issueRefund` marks an order `REFUNDED` regardless of amount, so a $1 refund on a $500 order reports as fully refunded
+- Payment status is stored as loose strings, so a typo silently creates a new status
 
 ## Activity (5 min)
 
-Select `SupportAgent.java` and ask for a review focused on the capacity tracking. Then ask Copilot to fix the single most serious issue it found — and check whether the fix is actually correct.
+Select `BillingService.java` and ask for a review focused on the refund logic. Then ask Copilot to fix the single most serious issue it found — and check whether the fix is actually correct.
 
 ---
 
-# Part 7: The Cloud Coding Agent (Demo — 10 min)
+# Part 6: Custom Agents (5 min)
 
-> **Instructor demo.** This runs on GitHub rather than your machine and requires familiarity with GitHub issues and pull requests. Watch how it works — you can try it yourself afterwards.
+You just typed a fairly long review prompt. If code review is something you do regularly, you shouldn't be retyping it.
 
-## What It Is
+A **custom agent** is a saved, named mode with its own instructions — it appears in the mode dropdown alongside Ask, Agent, and Plan.
 
-Everything so far ran inside VS Code, with you watching. The **cloud coding agent** runs on GitHub's servers, without you present.
+**Create `.github/agents/reviewer.agent.md`:**
+
+```markdown
+---
+description: Reviews Java code for correctness and design problems without making edits.
+name: Reviewer
+---
+
+# Review instructions
+
+You are a senior Java engineer reviewing code before it reaches production.
+
+Identify correctness bugs, unhandled edge cases, and design problems. For 
+each issue, describe the specific scenario where it causes a failure and 
+rate its severity as HIGH, MEDIUM, or LOW.
+
+Pay particular attention to:
+- Exception handling that hides failures rather than surfacing them
+- Arithmetic on monetary values
+- Mutable state exposed through getters
+- Boundary conditions in comparisons
+
+Do not edit any files. Report findings only.
+```
+
+**Now open the mode dropdown.** "Reviewer" appears as an option. Select it, open any class, and simply say:
+
+```
+Review this
+```
+
+You get the same structured review without retyping the instructions.
+
+> **Why this matters in a team:** a custom agent committed to the repository means every engineer reviews against the same standards. It turns one person's review checklist into something the whole team applies automatically.
+
+---
+
+# Part 7: The Cloud Coding Agent and MCP (10 min)
+
+> **Instructor demo.** These run on GitHub rather than your machine.
+
+## The Cloud Coding Agent
+
+Everything so far ran inside VS Code with you watching. The **cloud coding agent** runs on GitHub's servers without you present.
 
 The workflow:
 
-1. You create a **GitHub issue** describing a task — the same way you'd file a ticket for a colleague
+1. You create a **GitHub issue** describing a task — like filing a ticket for a colleague
 2. You **assign the issue to Copilot**
-3. Copilot works in a sandboxed environment on GitHub's infrastructure — reading the repository, writing code, running tests
+3. It works in a sandboxed environment — reading the repository, writing code, running tests
 4. It opens a **pull request** with the finished work
-5. You review the pull request and merge it, or ask for changes
+5. You review and merge, or request changes
 
-## Terms You Need
-
-Since we haven't used these yet:
+**Terms, since we haven't used these:**
 
 - **Branch** — a separate copy of the code where changes can be made without affecting the main version
-- **Pull request (PR)** — a proposal to merge a branch into the main code. It shows exactly what changed and lets people review before it's accepted
-- **Diff** — the view of what changed: green lines added, red lines removed
+- **Pull request (PR)** — a proposal to merge a branch into the main code, showing exactly what changed
+- **Diff** — the view of what changed: green added, red removed
 
-## What Makes This Different
+**What makes it different:** the agent isn't waiting on you. File three issues, assign them all, close your laptop, come back to three pull requests. Every PR it opens goes through automatic security scanning — vulnerability analysis, secret detection, dependency checks — before you look at it.
 
-The agent isn't waiting on you. You can file three issues, assign all of them, close your laptop, and come back to three pull requests.
+**Where it works well:** self-contained features, bugs with clear reproduction steps, adding test coverage, dependency updates.
 
-Every PR it opens automatically goes through security scanning — vulnerability analysis, secret detection, and dependency checks — before you even look at it.
+**Where it struggles:** changes spanning many files with architectural implications. The more design judgement required, the more review it needs.
 
-**Where it works well:** self-contained features, bug fixes with clear reproduction steps, adding test coverage, dependency updates.
+The same code review capability from Part 5 also runs on pull requests, where it's more capable — it sees the full change in the context of the entire repository rather than one file.
 
-**Where it struggles:** changes spanning many files with architectural implications. The more design judgement a task requires, the more review it needs.
-
-## Agentic Code Review on Pull Requests
-
-The same review capability we used locally also runs on pull requests — and it's more capable there, because it can see the full change in the context of the entire repository rather than just the file in front of it.
-
-Teams also use this for governance: a `SKILL.md` file under `.github/skills` lets an organisation define its own review standards, and every review in that repository applies them automatically.
-
----
-
-# Part 8: MCP — Where This Is Heading (5 min)
-
-One last concept, because it explains why these tools keep getting more capable.
+## MCP — Where This Is Heading
 
 **Model Context Protocol (MCP)** is a standard way for AI agents to connect to external systems. With MCP configured, Copilot can — during a single task — query a database schema, read documentation from Confluence or Notion, check whether a CI pipeline passed, or pull design specs from Figma.
 
 **Why this matters:** the limit on what Copilot can do has never really been the model. It's been context. An agent that can only see your open files is guessing about everything else. An agent that can read your actual schema, your actual documentation, and your actual build status is working with the same information you have.
 
-That's the direction: not a smarter autocomplete, but an agent wired into the systems your team already uses.
+That's the direction — not a smarter autocomplete, but an agent wired into the systems your team already uses.
 
 ---
 
 # Wrap-Up
 
-## What You Should Take Away
+## What to Take Away
 
-**The mode matters.** Ask, Edit, Agent, and Plan produce very different behaviour from the same prompt. Know which one you're in.
+**The mode matters.** Ask, Agent, and Plan produce very different behaviour from the same prompt. Know which one you're in.
 
 **Context is the constraint.** Copilot's answer quality tracks directly with what it can see. Open the relevant files. Attach them explicitly. Write custom instructions once rather than repeating yourself.
 
-**Specificity beats politeness.** "Make this better" produces a guess. Stating the action, target, constraint, and standard produces what you asked for.
+**Specificity beats politeness.** A reasonable-sounding vague request produces a rewrite you have to audit. Stating the action, target, constraint, and standard produces exactly what you asked for.
 
-**Agent Mode makes design decisions.** It will resolve ambiguity in your request by choosing an approach. On familiar ground that's leverage; on unfamiliar ground it's a liability.
+**Fundamentals are what let you prompt well.** The precise prompt in Part 3 required knowing what an off-by-one error is, why catching generic `Exception` is dangerous, and what truncation does to money. Copilot didn't supply that knowledge. You did.
 
-**Review is not optional.** The code review exercise found real design flaws in code that compiled and ran correctly. Copilot can find those problems — and it can also create them.
+**Agent Mode makes design decisions.** It resolves ambiguity by choosing an approach. On familiar ground that's leverage; on unfamiliar ground it's a liability.
+
+**Review is not optional.** The code review in Part 5 found real flaws in code that compiled and ran and produced plausible output. Copilot can find those problems — and it can also create them.
 
 ## The Honest Summary
 
-Copilot has moved from autocomplete to autonomous agent in about three years. The features shift constantly — commands get renamed, panels get merged, defaults change. What doesn't change is the underlying relationship: **the better you understand the code, the more value you get from the tool.**
+Copilot moved from autocomplete to autonomous agent in about three years. The features shift constantly — commands get renamed, panels get merged, modes disappear. You saw several examples of that in this lesson.
 
-Engineers who understand systems deeply use this to move considerably faster. Engineers who don't use it to generate code they can't evaluate. The tool amplifies whichever one you are.
+What doesn't change is the underlying relationship: **the better you understand the code, the more value you get from the tool.** Engineers who understand systems deeply use this to move considerably faster. Engineers who don't use it to generate code they can't evaluate.
+
+The tool amplifies whichever one you are.
 
 ---
 
