@@ -407,6 +407,24 @@ A small input box appears in the editor itself. Type what you want, and the chan
 
 **Try it on the case study.** Open `Product.java`, put your cursor inside `reduceStock`, press `Ctrl+I`, and type:
 
+`Throw IllegalArgumentException if quantity is negative or greater than current stock`
+
+The change appears right there in the method — no chat panel, no scrolling, no Apply button.
+
+**When to use inline chat instead of the Chat panel:**
+
+| Use inline chat (`Ctrl+I`) | Use the Chat panel (`Ctrl+Alt+I`) |
+|---|---|
+| Changing one method you're looking at | Asking questions across several files |
+| Quick fixes while you're mid-flow | Anything you want to read and think about |
+| You know exactly what you want changed | You want to discuss before changing |
+
+**Why it matters in practice:** most edits are small and local — add a null check, extract a variable, tighten a condition. Opening a chat panel for those breaks your concentration. Inline chat keeps you in the code.
+
+> **Two kinds of diff look the same.** If a green diff appears and you didn't ask for it, that's Next Edit Suggestion — Copilot guessing your next edit. If it appeared because you pressed `Ctrl+I` and typed an instruction, that's your answer. Same appearance, different trigger.
+
+> Inline chat also accepts slash commands. Put your cursor in a method, press `Ctrl+I`, and type `/fix` or `/tests` — same commands, without leaving the editor.
+
 ## Step 3: Copilot Chat
 
 Open Chat with `Ctrl+Alt+I`. **Set the mode dropdown at the bottom of the chat box to `Ask`** — this means Copilot will answer and propose code, but won't modify your files until you tell it to.
