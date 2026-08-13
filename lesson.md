@@ -366,7 +366,7 @@ The practical consequence: **output quality is determined by input context.** We
 
 > You have GitHub Copilot Business through this programme, which includes every feature in this lesson.
 
-## Step 2: Ghost Text and the Suggestion Toolbar
+## Step 2: Ghost Text ,the Suggestion Toolbar and Inline Chat 
 
 As you type, Copilot shows suggestions in grey. This is **ghost text**. When it appears, a small **floating toolbar** appears above it:
 
@@ -397,7 +397,15 @@ When the suggestion appears:
 
 > **You may also see a green highlighted block appear on its own.** That's **Next Edit Suggestion** — a separate feature that predicts an edit *elsewhere in the file*, based on a change you just made, rather than at your cursor. Accept it with `Tab`, dismiss with `Esc`.
 
-> Older material lists `Alt + ]` and `Alt + [` for cycling suggestions. These only work on true ghost text and behave inconsistently across platforms. The toolbar arrows do the same job reliably.
+### Inline Chat — Editing Without Leaving the Code
+
+The Chat panel is useful, but it takes your eyes away from the code. **Inline chat** puts a prompt box directly in the editor, right where your cursor is.
+
+**Press `Ctrl+I`** with your cursor inside a method, or with code selected.
+
+A small input box appears in the editor itself. Type what you want, and the change appears in place as a diff you can accept with `Enter` or discard with `Esc`.
+
+**Try it on the case study.** Open `Product.java`, put your cursor inside `reduceStock`, press `Ctrl+I`, and type:
 
 ## Step 3: Copilot Chat
 
