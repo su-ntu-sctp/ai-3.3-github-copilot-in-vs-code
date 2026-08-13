@@ -1,69 +1,66 @@
-# Lesson: Coaching: Boosting Productivity with GitHub Copilot
+# Lesson 3.3: Boosting Productivity with GitHub Copilot
 
 ## Lesson Overview
 
-This Saturday coaching session has two parts. The first hour revisits key concepts from recent lessons through a structured recap and hands-on activity. The second part introduces GitHub Copilot — an AI-powered coding assistant built into VS Code — and shows you how to use it to write Java code faster, smarter, and with less repetition. By the end of this session you will have hands-on experience with Copilot's most useful features, an understanding of how Copilot's chat modes work, and a live demo of its most advanced agentic capabilities.
+GitHub Copilot has changed significantly. It started as an autocomplete tool. Today it is an AI agent that can plan work, edit multiple files on its own, review your code, and even take a task description and produce a finished pull request without you touching the keyboard.
 
-**Prerequisites:** Basic Java knowledge — classes, methods, and familiarity with VS Code
+This session covers the full range — starting with the everyday features you'll use constantly, then moving into the agentic capabilities that are reshaping how professional teams actually work.
 
-## Lesson Objectives
+**Prerequisites:** Java classes and objects, collections (`ArrayList`, `HashMap`), VS Code, basic Git (`clone`, `pull`, `push`)
 
-By the end of this lesson, students will be able to:
-
-1. **Install** and configure GitHub Copilot in VS Code and use inline suggestions to generate Java code
-2. **Apply** Copilot Chat, slash commands, and chat modes (Ask / Edit / Agent / Plan) to explain, fix, refactor, and document code
-3. **Review** Copilot-generated unit tests and Javadoc, understanding what's possible today versus what will unlock once a build tool is introduced
-4. **Use** Copilot's agentic features — Copilot CLI and Agent Mode — to autonomously extend an existing Java class across multiple files
-5. **Evaluate** Copilot's suggestions critically and understand its limitations, best practices, and how quickly its feature set evolves
+**Duration:** 2 hours
 
 ---
 
-## Part 1: Setup and First Contact
+## Lesson Objectives
 
-### What is GitHub Copilot?
+By the end of this lesson, you will be able to:
 
-GitHub Copilot is an AI-powered coding assistant developed by GitHub and OpenAI. It integrates directly into VS Code and suggests code as you type — from single lines to entire methods and classes. It is trained on billions of lines of public code and understands context from your current file, comments, and method names.
+1. **Use** Copilot's core features — ghost text, chat, and slash commands — to write and understand Java code faster
+2. **Select** the right Copilot chat mode (Ask, Edit, Agent, Plan) for the task at hand
+3. **Write** effective prompts and manage context to get dramatically better results
+4. **Apply** Agent Mode to autonomously implement a multi-file feature
+5. **Explain** how Copilot's cloud agent, code review, and MCP integration work in professional teams
 
-Think of it as a very experienced pair programmer sitting next to you, offering suggestions in real time. You are always in control — you decide what to accept, modify, or reject.
+---
 
-**Why learn this?**
-AI coding assistants are rapidly becoming a standard part of professional development workflows. Knowing how to use Copilot effectively makes you significantly faster and more productive — not just in Java, but in any language.
+## Session Plan
 
-### Free Tier vs Pro
+| Part | Topic | Time |
+|---|---|---|
+| 1 | Setup and Core Features | 20 min |
+| 2 | Chat Modes | 15 min |
+| 3 | Prompt and Context Engineering | 20 min |
+| 4 | The Case Study Project | 10 min |
+| 5 | Agent Mode — Autonomous Development | 25 min |
+| 6 | Code Review with Copilot | 15 min |
+| 7 | The Cloud Coding Agent (Demo) | 10 min |
+| 8 | MCP — Where This Is Heading | 5 min |
 
-GitHub Copilot offers a **free tier** which includes:
-- Code completions (limited number per month)
-- Copilot Chat in VS Code
-- Access to slash commands (`/explain`, `/fix`, `/tests`, `/doc`)
-- Copilot CLI in the terminal
+---
 
-**Pro features** (paid, but you will see a live demo):
-- Unlimited completions
-- Higher usage limits for Agent Mode and multi-file editing
-- Custom instructions at scale across large projects
+# Part 1: Setup and Core Features (20 min)
 
-For this lesson, everything in Parts 1–4 works on the free tier. Parts 5 onward are instructor demo, with several sections now also practiced hands-on.
+## What Copilot Actually Is
 
-### Step 1: Install GitHub Copilot in VS Code
+Copilot is an AI model that reads your code as context and predicts what should come next. That's the core mechanism behind everything in this lesson — inline suggestions, chat answers, and autonomous agents are all the same underlying capability, exposed through different interfaces.
+
+The practical implication: **the quality of what you get out is determined by the quality of the context you put in.** We'll return to this repeatedly.
+
+## Step 1: Install and Sign In
 
 1. Open VS Code
-2. Click the **Extensions** icon in the sidebar (or `Ctrl+Shift+X`)
-3. Search for **GitHub Copilot**
-4. Install **GitHub Copilot** (by GitHub)
-5. Also install **GitHub Copilot Chat** (by GitHub) if not already bundled
+2. Click **Extensions** in the sidebar (`Ctrl+Shift+X`)
+3. Search for **GitHub Copilot** and install it
+4. Also install **GitHub Copilot Chat**
+5. Click the **Accounts** icon at the bottom of the sidebar → **Sign in with GitHub**
+6. Check the bottom status bar — the Copilot icon should be visible and active
 
-### Step 2: Sign In with Your GitHub Account
+> **Note:** You have GitHub Copilot Business through this programme, which includes every feature in this lesson.
 
-1. After installation, click the **Accounts** icon at the bottom of the VS Code sidebar
-2. Select **Sign in with GitHub**
-3. Follow the browser prompt to authorise VS Code
-4. Once signed in, you will see the Copilot icon in the bottom status bar — a green circle confirms it is active
+## Step 2: Ghost Text
 
-> ⚠️ **Free tier:** You will need a GitHub account. If you don't have one, create one at https://github.com. The free tier is available without a credit card.
-
-### Step 3: Understanding Suggestions (Ghost Text)
-
-When Copilot is active, it shows suggestions as **grey ghost text** as you type. Here are the key shortcuts:
+As you type, Copilot shows suggestions in grey. This is called ghost text.
 
 | Action | Shortcut |
 |---|---|
@@ -71,135 +68,39 @@ When Copilot is active, it shows suggestions as **grey ghost text** as you type.
 | Reject suggestion | `Esc` |
 | Next suggestion | `Alt + ]` |
 | Previous suggestion | `Alt + [` |
-| Open all suggestions | `Ctrl + Enter` |
-| Trigger suggestion manually | `Alt + \` |
+| Trigger manually | `Alt + \` |
 
-Create a new file `CopilotDemo.java` and just start typing — observe how Copilot immediately starts suggesting code.
-
----
-
-## Part 2: Code Completion
-
-This is Copilot's most fundamental feature. As you type, it predicts what you want to write next based on the context of your file.
-
-### Completing Methods from Method Names
-
-Create a new file `MathHelper.java`. Just type the method signature and let Copilot fill in the body.
+**Try it now.** Create a file called `Scratch.java` and type:
 
 ```java
-public class MathHelper {
+public class Scratch {
 
-    // Just type the signature and press Tab when Copilot suggests the body
-    public int add(int a, int b) {
+    // Returns the number of business days between two dates, excluding weekends
     
-    }
-
-    public boolean isEven(int number) {
-    
-    }
-
-    public int factorial(int n) {
-    
-    }
 }
 ```
 
-Observe how Copilot infers the correct implementation from the method name alone.
+Press `Enter` after the comment and wait. Copilot will write the method. Press `Tab` to accept.
 
-### Comment-Driven Development
+Notice what just happened: you described intent in a comment, and Copilot produced an implementation. This is the simplest form of prompt engineering — and it's already the core skill.
 
-One of the most powerful techniques is to **write a comment describing what you want** and let Copilot write the code.
+## Step 3: Copilot Chat
 
-```java
-public class StringUtils {
+Open Chat with `Ctrl+Alt+I`. This is a conversation about your code rather than an autocomplete.
 
-    // Method that checks if a string is a palindrome
-    
-    // Method that counts the number of vowels in a string
-    
-    // Method that reverses the words in a sentence
-    
-    // Method that capitalises the first letter of every word
-}
-```
+**Slash commands** are shortcuts for common requests:
 
-Type each comment, press `Enter`, and wait for Copilot's suggestion. Accept with `Tab`.
+| Command | What it does |
+|---|---|
+| `/explain` | Explains the selected code |
+| `/fix` | Finds and fixes bugs in the selected code |
+| `/tests` | Generates unit tests |
+| `/doc` | Generates documentation comments |
 
-### Completing Repetitive Code
-
-Copilot is excellent at completing repetitive boilerplate. Create a `Customer.java` POJO:
+**Try `/fix` now.** Create `Buggy.java`:
 
 ```java
-public class Customer {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private int yearOfBirth;
-
-    // Start typing "public String get" and watch Copilot complete all getters
-    // Then type "public void set" and watch it complete all setters
-}
-```
-
-### 🧑‍💻 Activity **(15 minutes)**
-
-Using **only comments** and Copilot suggestions, build a `Calculator.java` class that includes:
-
-1. `add`, `subtract`, `multiply`, `divide` methods
-2. A method that returns the maximum of three numbers
-3. A method that checks if a number is prime
-4. A method that converts Celsius to Fahrenheit
-
-Do not type any implementation code yourself — write the comment, accept Copilot's suggestion, and move on.
-
----
-
-## Part 3: GitHub Copilot Chat
-
-Copilot Chat is a conversational AI assistant built into VS Code. Unlike ghost text suggestions, Chat lets you ask questions, request explanations, and have a dialogue about your code.
-
-### Opening Copilot Chat
-
-- Click the **Copilot Chat** icon in the VS Code sidebar (speech bubble icon)
-- Or use the keyboard shortcut `Ctrl+Alt+I`
-
-### Explaining Code
-
-Paste the following buggy, hard-to-read code into a new file `Mystery.java`:
-
-```java
-public class Mystery {
-    public static int m(int[] a) {
-        int x = 0;
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] > x) x = a[i];
-        }
-        return x;
-    }
-
-    public static boolean c(String s) {
-        for (int i = 0; i < s.length() / 2; i++) {
-            if (s.charAt(i) != s.charAt(s.length() - 1 - i)) return false;
-        }
-        return true;
-    }
-}
-```
-
-Select all the code, then in Copilot Chat type:
-
-```
-Explain what this code does
-```
-
-Observe how Copilot gives a clear, detailed explanation.
-
-### Fixing Bugs
-
-Paste this buggy code into a file `BuggyService.java`:
-
-```java
-public class BuggyService {
+public class Buggy {
 
     public double calculateAverage(int[] numbers) {
         int sum = 0;
@@ -208,396 +109,630 @@ public class BuggyService {
         }
         return sum / numbers.length;
     }
-
-    public String formatName(String firstName, String lastName) {
-        return lastName.toUpperCase() + ", " + firstName.toUppercase();
-    }
 }
 ```
 
-Select the code and in Chat type:
+Select all the code, open Chat, type `/fix`, and press Enter.
 
-```
-/fix
-```
+Copilot should find three problems: the loop runs one index too far (`<=` should be `<`), integer division truncates the result, and there's no handling for an empty array.
 
-Copilot will identify both bugs — the off-by-one error in the loop and the incorrect method name `toUppercase()` — and suggest fixes.
+> **About `/tests`:** Copilot will generate a complete JUnit test class, but we don't have a build tool (Maven or Gradle) in this project yet, so there's no JUnit library available to actually run them. For today, use `/tests` to **read and review** what good test coverage looks like. You'll run these for real once we move to Spring Boot.
 
-### Refactoring Code
-
-Select this repetitive code:
-
-```java
-public class OrderProcessor {
-
-    public void processOnlineOrder(String item, int qty) {
-        System.out.println("Processing online order");
-        System.out.println("Item: " + item);
-        System.out.println("Quantity: " + qty);
-        double price = qty * 10.0;
-        System.out.println("Total: $" + price);
-    }
-
-    public void processInStoreOrder(String item, int qty) {
-        System.out.println("Processing in-store order");
-        System.out.println("Item: " + item);
-        System.out.println("Quantity: " + qty);
-        double price = qty * 10.0;
-        System.out.println("Total: $" + price);
-    }
-}
-```
-
-In Chat type:
-
-```
-Refactor this to remove duplication
-```
-
-### 🧑‍💻 Activity **(15 minutes)**
-
-You have been given the following `CustomerValidator.java` with multiple issues:
-
-```java
-public class CustomerValidator {
-
-    public boolean validateEmail(String email) {
-        if (email == null) {
-            return true; // should be false
-        }
-        return email.contains("@");
-    }
-
-    public boolean validateAge(int yearOfBirth) {
-        int currentYear = 2024;
-        int age = currentYear - yearOfBirth;
-        if (age >= 18 & age <= 100) { // wrong operator
-            return true;
-        }
-        return false;
-    }
-
-    public String formatCustomerName(String first, String last) {
-        return first + last; // missing space
-    }
-}
-```
-
-Using **Copilot Chat only**:
-1. Ask Copilot to explain what the class does
-2. Use `/fix` to identify and fix all bugs
-3. Ask Copilot to refactor `validateAge` to be more concise
-4. Ask Copilot "What other validation methods would be useful for a Customer class?"
+> **About `/doc`:** Depending on your version, `/doc` may ask what kind of documentation you want — a docs folder, HTML output, or code comments. Choose **Java comments** for inline Javadoc.
 
 ---
 
-## Part 4: Slash Commands, Tests, and Documentation
+# Part 2: Chat Modes (15 min)
 
-### Slash Commands Reference
+This is the most important concept in the lesson, and the one most people miss.
 
-Slash commands are shortcuts you type in Copilot Chat to trigger specific actions.
+Copilot Chat operates in four different modes. There's a **mode selector dropdown in the chat input box** — it's small and easy to overlook, but it fundamentally changes what Copilot does with your request.
 
-| Command | What it does |
-|---|---|
-| `/explain` | Explains selected code in plain English |
-| `/fix` | Identifies and fixes bugs in selected code |
-| `/tests` | Generates unit tests for selected code (view/review only until we have a build tool — see below) |
-| `/doc` | Generates Javadoc comments for selected code (may show an options menu — see below) |
-
-### Generating Unit Tests (View and Review, Not Create — Yet)
-
-Select your `MathHelper.java` from Part 2 and in Chat type:
-
-```
-/tests
-```
-
-Copilot will generate a complete JUnit 5 test class with multiple test cases including edge cases you might not have thought of, shown directly in the chat response.
-
-> ℹ️ **Important:** Because our project doesn't have a build tool (Maven/Gradle) or JUnit on the classpath yet, we're using `/tests` here purely as a **"view and learn"** exercise — reading and understanding what a good test class looks like — rather than inserting it as a real, runnable test file. Once we build a Spring Boot project with a build tool later in the course, we'll come back and actually run `/tests` hands-on to create working test classes.
-
-Review the generated tests — Copilot usually covers:
-- Happy path (normal inputs)
-- Edge cases (zero, negative numbers)
-- Boundary values
-
-### Generating Javadoc
-
-Select your `Calculator.java` from the activity and in Chat type:
-
-```
-/doc
-```
-
-> ℹ️ **Note:** Depending on your Copilot Chat version, `/doc` may not insert Javadoc directly — it may first show you a menu asking what kind of documentation you want (e.g. a `/docs` folder with markdown, Javadoc HTML output, or Java comments). **Select "Java comments"** to get the inline Javadoc block described below.
-
-Copilot generates complete Javadoc with `@param`, `@return`, and `@throws` tags for every method.
-
-### Inline Chat with `Ctrl+I`
-
-Inline Chat lets you edit code without leaving your editor — you don't need to open the Chat panel.
-
-1. Place your cursor inside a method
-2. Press `Ctrl+I`
-3. Type an instruction directly in the editor
-
-For example, place your cursor inside `calculateAverage` and press `Ctrl+I`, then type:
-
-```
-Handle the case where the array is empty or null
-```
-
-Copilot will modify the method in place. You can accept (`Enter`) or discard (`Esc`).
-
-### 🧑‍💻 Activity **(15 minutes)**
-
-Take the `Library.java` class you built in the revision activity and use Copilot to:
-
-1. Use `/doc` to select one method and generate Javadoc for it — if prompted with an options menu, choose **"Java comments"**
-2. Use `/tests` to generate and review unit tests for your methods — **don't add this to the project yet**, since we don't have a build tool set up (we'll do this hands-on later with Spring Boot)
-3. Use `Ctrl+I` inline chat to add a `removeBook(String title)` method
-4. Use `Ctrl+I` to add input validation to `addBook()` — it should throw an `IllegalArgumentException` if the book is null
-
----
-
-## Part 5: Advanced Features (Instructor Demo + Hands-On)
-
-> ℹ️ **A quick word before we dive in:** Copilot's chat features are built around different **modes** — Ask, Edit, Agent, and Plan. Understanding these will make everything in this section click.
-
-### Understanding Copilot Chat's Modes
-
-Copilot Chat isn't just one thing — it operates in different modes, selectable from a dropdown at the top (or bottom) of the chat input box. It's small and easy to miss, but it changes Copilot's behavior significantly:
-
-| Mode | What it does |
-|---|---|
-| **Ask** | Answers questions and explains code. Never edits anything — pure Q&A. |
-| **Edit** | Applies inline edits across chosen files based on your instruction — more manual and scoped than Agent. |
-| **Agent** | Autonomously plans and executes multi-step, multi-file changes. Applies edits automatically, showing "keep/undo" per file rather than showing its reasoning up front. |
-| **Plan** | Works like Agent, but explicitly explores the codebase and shows its reasoning/plan *before* any code changes start — use this mode if you want to see the thinking, not just the result. |
-
-**Why this matters:** if you've noticed Copilot editing multiple files, or answering workspace-wide questions, without you explicitly asking it to — that's because **Agent mode is often the default** in current Copilot Chat. It reasons across your whole workspace and applies changes automatically, which is why some older, separate features (`@workspace`, a distinct "Edits" panel) have quietly folded into this same agentic behavior. We'll see this play out through the rest of this section.
-
-### Commit Message Generation (Free Tier)
-
-When you have staged changes in VS Code's Source Control panel, Copilot can suggest a commit message automatically.
-
-1. Make changes to a file and **stage them** first
-2. In the Source Control panel, look for the **sparkle icon** at the edge of the commit message box
-3. Copilot generates a meaningful commit message based on your diff
-
-> ℹ️ **Note:** The sparkle icon only appears/activates once you have staged changes. If you don't see it, double-check that something is actually staged first.
-
-This saves time and encourages consistent, descriptive commit messages.
-
-### Asking Workspace-Scoped Questions (Free Tier)
-
-You can ask Copilot Chat questions about your whole project directly, in natural language — no special syntax required:
-
-```
-How does the customer validation logic work in this project?
-Which classes depend on CustomerRepository?
-How is the database configured in this project?
-```
-
-Copilot reads relevant parts of your workspace automatically to answer — this is implicit, automatic behavior in current Copilot Chat (older versions required typing `@workspace` first; that explicit tag is no longer necessary in most cases).
-
-> ℹ️ **Related but different: `@newWorkspace`.** You may see this appear in autocomplete — it's a separate feature for **scaffolding a brand-new project from a description** (e.g. "create a new Spring Boot REST API project"), not for asking questions about a project you're already working in. Don't confuse the two.
-
-### Copilot CLI — Your Agent, Right in the Terminal (Free Tier)
-
-Copilot's terminal integration has moved beyond simple command suggestions — it now offers **Copilot CLI**, a full agentic session that runs directly in your terminal.
-
-1. Open the integrated terminal (`` Ctrl+` ``)
-2. Type:
-   ```
-   copilot
-   ```
-3. This launches an interactive Copilot CLI session — describe what you want in plain English, and Copilot works out the right command(s), shows you what it's about to run, and you approve before it executes.
-
-Try it:
-```
-find all java files modified in the last 7 days
-```
-
-**To exit the CLI session and return to your normal terminal:** type `/exit`, or press `Ctrl+D`, or press `Ctrl+C` twice.
-
-> ℹ️ **How this relates to Agent Mode:** Copilot CLI uses the **same agentic engine as Agent Mode** — the difference is where it lives. Agent Mode (below) works inside the editor, planning and executing changes across your codebase. Copilot CLI works in the terminal, independent of the editor, which is useful for scripting, file management, and Git operations without ever leaving the command line. We'll see the fuller, multi-file version of this same capability next, in Agent Mode.
-
-### Copilot Edits — Multi-File Editing (Free Tier / Hands-On)
-
-Copilot lets you describe a change and apply it **across multiple related files simultaneously** — you no longer need a separate "Edits" panel or mode-switch for this; simply describe the change directly in the regular Chat input, and Copilot detects when it spans multiple files.
-
-**Demo 1 — `Customer.java` + `CustomerValidator.java`**
-
-With both files open, type in Chat:
-
-```
-Add a phoneNumber field to the Customer class, and update 
-CustomerValidator to validate that phoneNumber is not null 
-and contains only digits.
-```
-
-Copilot proposes changes to **both** files, shown as diffs you review and accept file by file.
-
-**Demo 2 / Activity — `Library.java` + `Book`**
-
-```
-Add an isbn field to the Book class, and update Library's 
-addBook, removeBook, and any display methods to include it.
-```
-
-This works well as a student-led follow-up, since you already built `Library.java` yourselves in Part 4.
-
-### Custom Instructions (Free Tier / Hands-On)
-
-Custom instructions tell Copilot about your project conventions so every suggestion follows your standards automatically, without you having to repeat them each time.
-
-**Theory example — Spring Boot conventions (you'll apply this later):**
-
-Create a file `.github/copilot-instructions.md` in a project:
-
-```markdown
-# Copilot Instructions
-
-- Always use constructor injection, never field injection with @Autowired
-- Always return ResponseEntity from controller methods
-- Always use Optional for repository findById calls
-- Follow the service-repository pattern — no business logic in controllers
-- Use Lombok annotations (@Getter, @Setter, @Builder) on all entity classes
-```
-
-**Hands-on activity — scoped to what you know today (Java + Collections, no Spring Boot yet):**
-
-Create `.github/copilot-instructions.md` in your current workspace with:
-
-```markdown
-# Copilot Instructions
-
-- Always add Javadoc comments to every public method (summary, @param, @return)
-- Use meaningful variable names — no single-letter names except loop counters (i, j, k)
-- Prefer ArrayList over raw arrays for collections that may change size
-- When removing items from a List/Set/Map during iteration, use removeIf() 
-  or Iterator.remove() — never modify a collection directly inside a for-each loop
-- Always check for null before accessing object fields or calling methods on 
-  method parameters
-- Follow standard Java naming conventions: camelCase for methods/variables, 
-  PascalCase for class names
-- Include a main() method with a small demo/test of the class when generating 
-  a new class from scratch
-```
-
-Then, in a fresh file, ask Copilot Chat:
-
-```
-Create a Java class called Inventory that stores product names and quantities. 
-Include methods to add stock, remove stock, and update the quantity of an 
-existing product.
-```
-
-**Verify the generated code against your rules:** Is there Javadoc on every public method? Meaningful names? Null-checks on parameters? A `main()` demo? 
-
-> ℹ️ Frame this for students as: **custom instructions are a strong influence, not a guarantee.** Always review the output — don't assume the rules were followed 100% of the time.
-
-### Agent Mode — Autonomous Multi-Step Tasks (Hands-On + Pro Demo)
-
-Agent Mode is Copilot's most powerful capability — instead of suggesting one piece of code at a time, it plans and executes multi-step tasks autonomously across your entire project, applying changes automatically (surfacing risky actions for your review).
-
-**Theory demo (Spring Boot — you'll do this later):**
-
-```
-Add a new Interaction endpoint to simple-crm. 
-Create the entity with fields: id, remarks, interactionDate, customerId.
-Add the JPA repository, service interface and implementation, 
-and REST controller with full CRUD. Follow the existing patterns in the project.
-```
-
-**Hands-on activity — Inventory Reservation System (extends the class you just built):**
-
-Using your `Inventory.java` from the Custom Instructions activity, switch to **Agent** mode (or simply proceed — your version may detect this automatically) and type:
-
-```
-Extend my Inventory class into a reservation system. Add the ability to 
-reserve stock for an order (without removing it from available inventory 
-yet), confirm a reservation (which permanently deducts the stock), or 
-cancel a reservation (which releases the reserved stock back to available 
-inventory). Track reservations by a reservation ID. Also create a Main 
-class with a runnable demo showing: a successful reservation, a 
-confirmation, a cancellation, and one case where a reservation fails 
-because there isn't enough available stock.
-```
-
-Watch Copilot:
-1. Analyse the existing `Inventory.java` structure
-2. Plan the new state it needs (tracking reserved vs. available stock)
-3. Propose changes across files, showing diffs for review
-4. Generate a runnable `Main` class demonstrating all four scenarios
-
-**Want to see the planning stage explicitly, before any code changes?** Switch to **Plan** mode instead of Agent — it will explore the codebase and lay out its plan for your review first, rather than applying changes directly.
-
-This demonstrates the direction AI-assisted development is heading — from suggestion, to execution, to full autonomous multi-step reasoning.
-
----
-
-## Part 6: Best Practices and Limitations
-
-### When to Trust Copilot
-
-✅ **Copilot is reliable for:**
-- Boilerplate and repetitive code (getters, setters, constructors)
-- Standard algorithm implementations
-- Generating test cases
-- Writing documentation
-- Explaining unfamiliar code
-
-⚠️ **Always review carefully:**
-- Business logic — Copilot doesn't know your requirements
-- Security-sensitive code — always audit authentication, validation, and data handling
-- Database queries — verify correctness against your schema
-- Edge cases — Copilot may miss unusual scenarios
-
-### Copilot Can Be Wrong
-
-Copilot is a prediction engine, not an oracle. It can:
-- Generate code that compiles but produces incorrect results
-- Suggest outdated APIs or deprecated methods
-- Miss edge cases in complex logic
-- Hallucinate method names that don't exist
-
-**Rule:** Always read and understand every suggestion before accepting it. You are responsible for the code in your repository — not Copilot.
-
-### Copilot's Features Change Fast
-
-As you've seen throughout this lesson, Copilot's exact behavior — which commands exist, whether a feature needs an explicit tag or mode, even where a button lives in the UI — shifts frequently between versions. The underlying *concepts* (completions, chat, agentic multi-file editing) are stable; the *exact mechanics* are not. When in doubt, test live before relying on documentation or a lesson written even a few months ago.
-
-### Privacy on the Free Tier
-
-On the free tier, your code snippets may be used to improve GitHub Copilot's models. For private or proprietary code, check your organisation's policy before enabling Copilot. Pro and Enterprise tiers offer options to opt out of data sharing.
-
-### The Right Mental Model
-
-Copilot is a productivity multiplier, not a replacement for understanding. It makes good developers faster — but it cannot replace the foundations. If you don't understand Java, Copilot suggestions won't make sense and you won't be able to evaluate whether they're correct.
-
-**The best way to use Copilot:** Learn the foundations deeply, then let Copilot handle the routine parts so you can focus on what matters.
-
----
-
-## Summary
-
-| Feature | What it does | Tier |
+| Mode | Behaviour | Use it when |
 |---|---|---|
-| Ghost text completion | Suggests code as you type | Free |
-| Comment-driven generation | Write a comment, get the code | Free |
-| Copilot Chat (Ask / Edit / Agent / Plan modes) | Conversational AI in VS Code, with modes for answering, scoped edits, and full autonomous execution | Free |
-| `/explain` `/fix` `/tests` `/doc` | Slash command shortcuts (`/tests` and `/doc` currently limited by our lack of a build tool — see Part 4) | Free |
-| Inline chat (`Ctrl+I`) | Edit code in place | Free |
-| Commit message generation | Suggests git commit messages from staged changes | Free |
-| Workspace-scoped questions | Ask about your whole project directly, in natural language | Free |
-| Copilot CLI | Agentic session in the integrated terminal (type `copilot`) | Free |
-| Copilot Edits (multi-file, via Chat) | Describe a change once, applied across related files as reviewable diffs | Free |
-| Custom instructions | Project-specific conventions applied automatically | Free (scales further on Pro) |
-| Agent Mode | Autonomous multi-step, multi-file tasks | Free (higher limits on Pro) |
+| **Ask** | Answers questions and explains code. Never modifies files. | You want to understand something |
+| **Edit** | Makes changes to files you specify. You review each change. | You know exactly what you want changed |
+| **Agent** | Decides which files to change, makes the changes, runs commands, and iterates on errors. | You want a task completed, not a specific edit |
+| **Plan** | Explores the codebase and produces a written plan for your approval before writing any code. | The task is large or risky |
 
-GitHub Copilot changes how fast you can write code — but your understanding of Java, Spring Boot, and software design is what lets you use it well. The goal is not to replace thinking, but to remove the friction so you can focus on the parts that matter most.
+**The key distinction:** Ask and Edit do what you tell them. **Agent decides for itself** what needs to happen — which files to open, what to change, whether to run a command, and whether the result is correct.
+
+**Try this now.** Open Chat and find the mode dropdown. Switch between Ask and Agent and notice the interface changes slightly. Set it back to **Agent** — we'll use it later.
+
+> **Note:** Agent is often the default mode. If Copilot has ever edited a file you didn't explicitly point it at, that's why.
+
+---
+
+# Part 3: Prompt and Context Engineering (20 min)
+
+Two things control the quality of Copilot's output. Getting these right is the difference between a tool that occasionally helps and one that meaningfully speeds you up.
+
+## Context: What Copilot Can See
+
+Copilot doesn't read your entire project on every request. It sees:
+
+- The file you're currently in
+- Code you've selected
+- **Other files you have open in tabs**
+- Files you explicitly attach to a chat message
+- In Agent mode: files it searches for and opens on its own
+
+**Practical rule:** if your question involves two classes, open both files before asking. If you ask "how does `TicketQueue` use `Ticket`?" with only one file open, Copilot is working with half the picture.
+
+**To attach a file explicitly:** click the paperclip / **Add Context** button in the chat input and select the file. This is more reliable than hoping the right tab is open.
+
+## Prompting: Say What You Actually Want
+
+Here's a demonstration worth doing carefully, because the contrast is stark.
+
+**Create `Order.java`:**
+
+```java
+public class Order {
+    private String customerId;
+    private double amount;
+    private String status;
+
+    public Order(String customerId, double amount, String status) {
+        this.customerId = customerId;
+        this.amount = amount;
+        this.status = status;
+    }
+
+    public double applyDiscount(double percent) {
+        if (status.equals("ACTIVE")) {
+            if (amount > 100) {
+                if (percent > 0 && percent <= 50) {
+                    amount = amount - (amount * percent / 100);
+                }
+            }
+        }
+        return amount;
+    }
+}
+```
+
+**Prompt A — vague:**
+
+```
+make this better
+```
+
+**Prompt B — specific:**
+
+```
+Refactor applyDiscount to use guard clauses instead of nested if statements. 
+Throw IllegalArgumentException if percent is outside 0-50. Do not change 
+the method signature or the discount calculation itself.
+```
+
+Run both. Prompt A produces *a* change — possibly renaming things, possibly restructuring the whole class, possibly adding features you didn't ask for. Prompt B produces exactly the change you specified.
+
+**The pattern that works:**
+
+| Element | Example |
+|---|---|
+| **Action** | "Refactor", "Add", "Extract" |
+| **Target** | "the `applyDiscount` method" |
+| **Constraint** | "without changing the method signature" |
+| **Standard** | "using guard clauses" |
+
+If you can write a clear Jira ticket, you can write a good Copilot prompt. It's the same skill.
+
+## Custom Instructions: Prompting Once, Permanently
+
+Rather than repeating your standards in every prompt, write them once in a file Copilot reads automatically.
+
+**Create `.github/copilot-instructions.md`** in your project root:
+
+```bash
+mkdir -p .github
+```
+
+Then create `.github/copilot-instructions.md` with:
+
+```markdown
+# Project Conventions
+
+- Validate method parameters and throw IllegalArgumentException for invalid input
+- Use guard clauses rather than nested conditionals
+- Add Javadoc to all public methods
+- Use enums for fixed sets of values, never String constants
+- Prefer immutable fields where a value should not change after construction
+```
+
+Every Copilot suggestion in this project now follows these rules without you asking. This is how teams keep AI-generated code consistent with their standards.
+
+> Custom instructions strongly influence output, but don't guarantee it. Still review.
+
+---
+
+# Part 4: The Case Study Project (10 min)
+
+We'll use a support ticket system for the rest of the lesson. It's small enough to understand quickly, but has enough real logic — state transitions, priority handling, assignment rules — that Copilot's agentic features have something meaningful to work with.
+
+**Create these four files.**
+
+### `Priority.java`
+
+```java
+public enum Priority {
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL
+}
+```
+
+### `TicketStatus.java`
+
+```java
+public enum TicketStatus {
+    OPEN,
+    IN_PROGRESS,
+    RESOLVED,
+    CLOSED
+}
+```
+
+### `Ticket.java`
+
+```java
+public class Ticket {
+
+    private final String id;
+    private final String title;
+    private final String description;
+    private Priority priority;
+    private TicketStatus status;
+    private String assignedAgentId;
+    private final long createdAtMillis;
+
+    public Ticket(String id, String title, String description, Priority priority) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("Ticket id is required");
+        }
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Ticket title is required");
+        }
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority is required");
+        }
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.status = TicketStatus.OPEN;
+        this.assignedAgentId = null;
+        this.createdAtMillis = System.currentTimeMillis();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority is required");
+        }
+        this.priority = priority;
+    }
+
+    public TicketStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TicketStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status is required");
+        }
+        this.status = status;
+    }
+
+    public String getAssignedAgentId() {
+        return assignedAgentId;
+    }
+
+    public void setAssignedAgentId(String assignedAgentId) {
+        this.assignedAgentId = assignedAgentId;
+    }
+
+    public long getCreatedAtMillis() {
+        return createdAtMillis;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + id + "] " + title
+                + " | " + priority
+                + " | " + status
+                + " | agent=" + (assignedAgentId == null ? "unassigned" : assignedAgentId);
+    }
+}
+```
+
+### `SupportAgent.java`
+
+```java
+public class SupportAgent {
+
+    private final String agentId;
+    private final String name;
+    private final int maxOpenTickets;
+    private int currentOpenTickets;
+
+    public SupportAgent(String agentId, String name, int maxOpenTickets) {
+        if (agentId == null || agentId.isBlank()) {
+            throw new IllegalArgumentException("Agent id is required");
+        }
+        if (maxOpenTickets < 1) {
+            throw new IllegalArgumentException("maxOpenTickets must be at least 1");
+        }
+        this.agentId = agentId;
+        this.name = name;
+        this.maxOpenTickets = maxOpenTickets;
+        this.currentOpenTickets = 0;
+    }
+
+    public String getAgentId() {
+        return agentId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getMaxOpenTickets() {
+        return maxOpenTickets;
+    }
+
+    public int getCurrentOpenTickets() {
+        return currentOpenTickets;
+    }
+
+    public boolean hasCapacity() {
+        return currentOpenTickets < maxOpenTickets;
+    }
+
+    public void assignTicket() {
+        if (!hasCapacity()) {
+            throw new IllegalStateException("Agent " + agentId + " is at capacity");
+        }
+        currentOpenTickets++;
+    }
+
+    public void releaseTicket() {
+        if (currentOpenTickets > 0) {
+            currentOpenTickets--;
+        }
+    }
+}
+```
+
+### `TicketQueue.java`
+
+```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class TicketQueue {
+
+    private final Map<String, Ticket> ticketsById;
+    private final Map<String, SupportAgent> agentsById;
+
+    public TicketQueue() {
+        this.ticketsById = new HashMap<>();
+        this.agentsById = new HashMap<>();
+    }
+
+    public void registerAgent(SupportAgent agent) {
+        if (agent == null) {
+            throw new IllegalArgumentException("Agent is required");
+        }
+        agentsById.put(agent.getAgentId(), agent);
+    }
+
+    public void submitTicket(Ticket ticket) {
+        if (ticket == null) {
+            throw new IllegalArgumentException("Ticket is required");
+        }
+        if (ticketsById.containsKey(ticket.getId())) {
+            throw new IllegalArgumentException("Duplicate ticket id: " + ticket.getId());
+        }
+        ticketsById.put(ticket.getId(), ticket);
+    }
+
+    public Ticket findById(String ticketId) {
+        return ticketsById.get(ticketId);
+    }
+
+    public List<Ticket> findByStatus(TicketStatus status) {
+        List<Ticket> result = new ArrayList<>();
+        for (Ticket ticket : ticketsById.values()) {
+            if (ticket.getStatus() == status) {
+                result.add(ticket);
+            }
+        }
+        return result;
+    }
+
+    public boolean assignTicket(String ticketId, String agentId) {
+        Ticket ticket = ticketsById.get(ticketId);
+        SupportAgent agent = agentsById.get(agentId);
+
+        if (ticket == null || agent == null) {
+            return false;
+        }
+        if (ticket.getStatus() != TicketStatus.OPEN) {
+            return false;
+        }
+        if (!agent.hasCapacity()) {
+            return false;
+        }
+
+        agent.assignTicket();
+        ticket.setAssignedAgentId(agentId);
+        ticket.setStatus(TicketStatus.IN_PROGRESS);
+        return true;
+    }
+
+    public boolean resolveTicket(String ticketId) {
+        Ticket ticket = ticketsById.get(ticketId);
+        if (ticket == null) {
+            return false;
+        }
+        if (ticket.getStatus() != TicketStatus.IN_PROGRESS) {
+            return false;
+        }
+
+        SupportAgent agent = agentsById.get(ticket.getAssignedAgentId());
+        if (agent != null) {
+            agent.releaseTicket();
+        }
+        ticket.setStatus(TicketStatus.RESOLVED);
+        return true;
+    }
+
+    public void printQueueSummary() {
+        System.out.println("=== Ticket Queue ===");
+        for (Ticket ticket : ticketsById.values()) {
+            System.out.println(ticket);
+        }
+        System.out.println("Open: " + findByStatus(TicketStatus.OPEN).size()
+                + " | In progress: " + findByStatus(TicketStatus.IN_PROGRESS).size()
+                + " | Resolved: " + findByStatus(TicketStatus.RESOLVED).size());
+    }
+
+    public static void main(String[] args) {
+        TicketQueue queue = new TicketQueue();
+
+        queue.registerAgent(new SupportAgent("A1", "Priya", 2));
+        queue.registerAgent(new SupportAgent("A2", "Marcus", 1));
+
+        queue.submitTicket(new Ticket("T-100", "Login fails on mobile",
+                "Users report 500 error on mobile login", Priority.CRITICAL));
+        queue.submitTicket(new Ticket("T-101", "Export button misaligned",
+                "Minor CSS issue on reports page", Priority.LOW));
+        queue.submitTicket(new Ticket("T-102", "Payment webhook timing out",
+                "Webhook retries exhausted after 30s", Priority.HIGH));
+
+        queue.assignTicket("T-100", "A1");
+        queue.assignTicket("T-102", "A2");
+        queue.resolveTicket("T-100");
+
+        queue.printQueueSummary();
+    }
+}
+```
+
+**Run `TicketQueue.java`** and confirm you see the summary output. This is our working system for the rest of the session.
+
+---
+
+# Part 5: Agent Mode — Autonomous Development (25 min)
+
+Everything so far has been you directing Copilot precisely. Agent Mode is different: you describe an outcome, and Copilot works out the steps.
+
+## What Agent Mode Actually Does
+
+When you give Agent Mode a task, it:
+
+1. Searches your project to understand the existing structure
+2. Decides which files need to be created or modified
+3. Makes the changes across all of them
+4. Runs commands if needed (compiling, running the program)
+5. Reads any errors and fixes them
+6. Presents everything for you to keep or undo
+
+Steps 4 and 5 are what separate this from everything else. It doesn't just write code — it checks whether the code worked and corrects itself.
+
+## Demo: Adding SLA Tracking
+
+**Set the mode dropdown to Agent.** Then enter this prompt:
+
+```
+Add SLA breach tracking to the support ticket system.
+
+Requirements:
+- Each Priority has a target resolution time: CRITICAL 1 hour, HIGH 4 hours, 
+  MEDIUM 24 hours, LOW 72 hours
+- Add a method to Ticket that reports whether it has breached its SLA, based 
+  on how long it has been open and its current status
+- Resolved and closed tickets never count as breached
+- Add a method to TicketQueue that returns all breached tickets
+- Update printQueueSummary to show a count of breached tickets
+- Update main to demonstrate a breach by creating a ticket with an old timestamp
+
+Follow the existing code style and validation approach.
+```
+
+**Watch what happens.** Copilot will work through the files one at a time. You'll see it open files, make edits, and show you a running summary of what it's doing.
+
+**When it finishes:**
+
+1. Review each changed file — click through the diffs
+2. Look specifically at how it handled the "old timestamp" requirement, since `createdAtMillis` is `final` and set in the constructor. There's no obvious way to do this without changing the class design. **How did Copilot solve it?** This is worth discussing — it had to make a design decision you didn't specify.
+3. Run `TicketQueue.java` and confirm the output shows breach information
+4. Click **Keep** to accept, or **Undo** to revert
+
+## The Point of That Exercise
+
+Notice you didn't tell it to add a constructor overload, or a package-private setter, or whatever approach it chose. You described the outcome, and it made design decisions on your behalf.
+
+**That's the risk and the value in the same sentence.** Agent Mode will make choices you didn't authorise, and it makes them fast. On a task you understand well, that's leverage. On a task you don't, you've just merged decisions you can't evaluate.
+
+## Plan Mode
+
+If you want to see the reasoning before any code changes, switch the dropdown to **Plan**.
+
+**Try the same prompt in Plan mode.** Instead of editing files, Copilot produces a written implementation plan — which files it intends to change and why. You approve the plan, and only then does it execute.
+
+For anything touching unfamiliar or high-risk code, this is the safer default.
+
+## Activity (10 min)
+
+Using **Agent Mode**, implement this yourself:
+
+```
+Add an escalation feature to the support ticket system.
+
+Requirements:
+- A ticket can be escalated, which raises its priority by one level 
+  (LOW to MEDIUM, MEDIUM to HIGH, HIGH to CRITICAL)
+- CRITICAL tickets cannot be escalated further and should throw 
+  IllegalStateException
+- Escalation should only be allowed on OPEN or IN_PROGRESS tickets
+- Track how many times each ticket has been escalated
+- Add a TicketQueue method to escalate a ticket by id, returning false 
+  if the ticket doesn't exist
+- Demonstrate escalation in main, including a failure case
+
+Follow the existing code style.
+```
+
+Review every change before accepting. Specifically check: did it handle the `CRITICAL` boundary correctly? Did it validate status before escalating?
+
+---
+
+# Part 6: Code Review with Copilot (15 min)
+
+Copilot can review code the way a senior engineer would — looking for correctness issues, edge cases, and design problems rather than formatting.
+
+## Local Review in VS Code
+
+Open `TicketQueue.java`, select the entire file, and in Chat (Ask mode) enter:
+
+```
+Review this class for correctness bugs, unhandled edge cases, and design 
+problems. Focus on the assignment and resolution logic. For each issue, 
+explain the specific scenario where it causes a problem.
+```
+
+**Things Copilot should surface:**
+
+- `resolveTicket` releases the agent's capacity, but nothing handles a ticket being reassigned or cancelled — the count can drift out of sync
+- There's no way to move a ticket to `CLOSED` at all, despite the enum defining it
+- `findByStatus` returns a new list, but the `Ticket` objects inside are the live ones — callers can mutate queue state through the returned list
+- `submitTicket` rejects duplicate IDs but `registerAgent` silently overwrites an existing agent
+- No handling for what happens to assigned tickets when an agent is removed or unavailable
+
+**This is the demonstration that matters most for experienced engineers.** These aren't style suggestions — they're real design flaws that would cause production incidents. Read through them and decide which you agree with.
+
+> **Ask it to justify itself.** Follow up with: "Which of these would you fix first and why?" The reasoning quality tells you how much to trust the findings.
+
+## Activity (5 min)
+
+Select `SupportAgent.java` and ask for a review focused on the capacity tracking. Then ask Copilot to fix the single most serious issue it found — and check whether the fix is actually correct.
+
+---
+
+# Part 7: The Cloud Coding Agent (Demo — 10 min)
+
+> **Instructor demo.** This runs on GitHub rather than your machine and requires familiarity with GitHub issues and pull requests. Watch how it works — you can try it yourself afterwards.
+
+## What It Is
+
+Everything so far ran inside VS Code, with you watching. The **cloud coding agent** runs on GitHub's servers, without you present.
+
+The workflow:
+
+1. You create a **GitHub issue** describing a task — the same way you'd file a ticket for a colleague
+2. You **assign the issue to Copilot**
+3. Copilot works in a sandboxed environment on GitHub's infrastructure — reading the repository, writing code, running tests
+4. It opens a **pull request** with the finished work
+5. You review the pull request and merge it, or ask for changes
+
+## Terms You Need
+
+Since we haven't used these yet:
+
+- **Branch** — a separate copy of the code where changes can be made without affecting the main version
+- **Pull request (PR)** — a proposal to merge a branch into the main code. It shows exactly what changed and lets people review before it's accepted
+- **Diff** — the view of what changed: green lines added, red lines removed
+
+## What Makes This Different
+
+The agent isn't waiting on you. You can file three issues, assign all of them, close your laptop, and come back to three pull requests.
+
+Every PR it opens automatically goes through security scanning — vulnerability analysis, secret detection, and dependency checks — before you even look at it.
+
+**Where it works well:** self-contained features, bug fixes with clear reproduction steps, adding test coverage, dependency updates.
+
+**Where it struggles:** changes spanning many files with architectural implications. The more design judgement a task requires, the more review it needs.
+
+## Agentic Code Review on Pull Requests
+
+The same review capability we used locally also runs on pull requests — and it's more capable there, because it can see the full change in the context of the entire repository rather than just the file in front of it.
+
+Teams also use this for governance: a `SKILL.md` file under `.github/skills` lets an organisation define its own review standards, and every review in that repository applies them automatically.
+
+---
+
+# Part 8: MCP — Where This Is Heading (5 min)
+
+One last concept, because it explains why these tools keep getting more capable.
+
+**Model Context Protocol (MCP)** is a standard way for AI agents to connect to external systems. With MCP configured, Copilot can — during a single task — query a database schema, read documentation from Confluence or Notion, check whether a CI pipeline passed, or pull design specs from Figma.
+
+**Why this matters:** the limit on what Copilot can do has never really been the model. It's been context. An agent that can only see your open files is guessing about everything else. An agent that can read your actual schema, your actual documentation, and your actual build status is working with the same information you have.
+
+That's the direction: not a smarter autocomplete, but an agent wired into the systems your team already uses.
+
+---
+
+# Wrap-Up
+
+## What You Should Take Away
+
+**The mode matters.** Ask, Edit, Agent, and Plan produce very different behaviour from the same prompt. Know which one you're in.
+
+**Context is the constraint.** Copilot's answer quality tracks directly with what it can see. Open the relevant files. Attach them explicitly. Write custom instructions once rather than repeating yourself.
+
+**Specificity beats politeness.** "Make this better" produces a guess. Stating the action, target, constraint, and standard produces what you asked for.
+
+**Agent Mode makes design decisions.** It will resolve ambiguity in your request by choosing an approach. On familiar ground that's leverage; on unfamiliar ground it's a liability.
+
+**Review is not optional.** The code review exercise found real design flaws in code that compiled and ran correctly. Copilot can find those problems — and it can also create them.
+
+## The Honest Summary
+
+Copilot has moved from autocomplete to autonomous agent in about three years. The features shift constantly — commands get renamed, panels get merged, defaults change. What doesn't change is the underlying relationship: **the better you understand the code, the more value you get from the tool.**
+
+Engineers who understand systems deeply use this to move considerably faster. Engineers who don't use it to generate code they can't evaluate. The tool amplifies whichever one you are.
 
 ---
 
