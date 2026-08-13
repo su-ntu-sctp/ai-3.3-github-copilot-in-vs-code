@@ -399,7 +399,7 @@ When the suggestion appears:
 
 ### Inline Chat — Editing Without Leaving the Code
 
-The Chat panel is useful, but it takes your eyes away from the code. **Inline chat** puts a prompt box directly in the editor, right where your cursor is.
+ **Inline chat** puts a prompt box directly in the editor, right where your cursor is.
 
 **Press `Ctrl+I`** with your cursor inside a method, or with code selected.
 
