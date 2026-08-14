@@ -6,6 +6,10 @@ GitHub Copilot started as an autocomplete tool. It is now an AI agent that plans
 
 This session covers that full range. We start with the everyday features you'll use constantly, then move into the agentic capabilities that are changing how professional teams work.
 
+**Prerequisites:** Java classes and objects, collections (`ArrayList`, `HashMap`), arrays, try/catch, VS Code
+
+**Duration:** 2 hours
+
 ---
 
 ## Lesson Objectives
@@ -16,7 +20,7 @@ By the end of this lesson, you will be able to:
 2. **Select** the right Copilot chat mode (Ask, Agent, Plan) for the task at hand
 3. **Write** precise prompts and manage context to get dramatically better results
 4. **Apply** Agent Mode to implement a multi-file feature autonomously
-5. 
+5. **Explain** how Copilot's cloud agent, code review, and MCP integration work in professional teams
 
 ---
 
@@ -366,7 +370,7 @@ The practical consequence: **output quality is determined by input context.** We
 
 > You have GitHub Copilot Business through this programme, which includes every feature in this lesson.
 
-## Step 2: Ghost Text ,the Suggestion Toolbar and Inline Chat 
+## Step 2: Ghost Text and the Suggestion Toolbar
 
 As you type, Copilot shows suggestions in grey. This is **ghost text**. When it appears, a small **floating toolbar** appears above it:
 
@@ -397,33 +401,7 @@ When the suggestion appears:
 
 > **You may also see a green highlighted block appear on its own.** That's **Next Edit Suggestion** — a separate feature that predicts an edit *elsewhere in the file*, based on a change you just made, rather than at your cursor. Accept it with `Tab`, dismiss with `Esc`.
 
-### Inline Chat — Editing Without Leaving the Code
-
- **Inline chat** puts a prompt box directly in the editor, right where your cursor is.
-
-**Press `Ctrl+I`** with your cursor inside a method, or with code selected.
-
-A small input box appears in the editor itself. Type what you want, and the change appears in place as a diff you can accept with `Enter` or discard with `Esc`.
-
-**Try it on the case study.** Open `Product.java`, put your cursor inside `reduceStock`, press `Ctrl+I`, and type:
-
-`Throw IllegalArgumentException if quantity is negative or greater than current stock`
-
-The change appears right there in the method — no chat panel, no scrolling, no Apply button.
-
-**When to use inline chat instead of the Chat panel:**
-
-| Use inline chat (`Ctrl+I`) | Use the Chat panel (`Ctrl+Alt+I`) |
-|---|---|
-| Changing one method you're looking at | Asking questions across several files |
-| Quick fixes while you're mid-flow | Anything you want to read and think about |
-| You know exactly what you want changed | You want to discuss before changing |
-
-**Why it matters in practice:** most edits are small and local — add a null check, extract a variable, tighten a condition. Opening a chat panel for those breaks your concentration. Inline chat keeps you in the code.
-
-> **Two kinds of diff look the same.** If a green diff appears and you didn't ask for it, that's Next Edit Suggestion — Copilot guessing your next edit. If it appeared because you pressed `Ctrl+I` and typed an instruction, that's your answer. Same appearance, different trigger.
-
-> Inline chat also accepts slash commands. Put your cursor in a method, press `Ctrl+I`, and type `/fix` or `/tests` — same commands, without leaving the editor.
+> Older material lists `Alt + ]` and `Alt + [` for cycling suggestions. These only work on true ghost text and behave inconsistently across platforms. The toolbar arrows do the same job reliably.
 
 ## Step 3: Copilot Chat
 
